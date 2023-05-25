@@ -7,35 +7,43 @@ body {
 	line-height: 1.7;
 	-webkit-transition: all 300ms linear;
 	transition: all 300ms linear;
+	background-color: rgb(142, 142, 142);
 }
 
-.navTransparent {
-	background-color: transparent;
+.fullnametoptext {
+	font-size: 80px;
+	text-align: center;
+	top: 30%;
+	bottom: 70%;
+	position: absolute;
+	display: flex;
+	justify-content: center;
 }
 
-.zombies {
-	top: 300px;
-	right: 125px;
-	font-size: 75px;
+.underfullname {
+	position: absolute;
+	top: 50%;
+	bottom: 50%;
+	font-size: 15px;
+	display: flex;
+	justify-content: center;
 }
 
-.firstbackground {
-	background-color: #6892a3;
-	background-size: cover;
-	background-position: center;
-	background-repeat: no-repeat;
-	height: 950px;
+.underfullnames {
+	position: absolute;
+	top: 80%;
+	bottom: 20%;
+	font-size: 15px;
+	display: flex;
+	justify-content: center;
 }
 
-.hrnew4 {
-	width: 50px;
-	height: 5px;
-	background-color: #4b4b4d;
-	top: 300px;
-	right: 125px;
+.rowexample {
+	height: 500px;
 }
-
-
+.expertise{
+	font-size: 30px;
+}
 /*-----Portfolio-----*/
 .portfolio {
 	padding-top: 5em;
