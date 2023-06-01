@@ -6,3 +6,12 @@ function scrollToSection(sectionId) {
         });
     }
 }
+
+
+// Progress bars
+document.addEventListener("DOMContentLoaded", function () {
+    const progressBars = document.querySelectorAll('.progress .progress-bar');
+    progressBars.forEach(function (bar) {
+        bar.style.width = bar.getAttribute("aria-valuenow") + "%";
+    });
+});
