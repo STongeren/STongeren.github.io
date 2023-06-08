@@ -5,7 +5,7 @@
 	padding: 0;
 	box-sizing: border-box;
 	font-family: 'Poppins', sans-serif;
-	border: red 1px solid;
+	/* border: red 1px solid; */
 	color: white;
 	background-color: linear-gradient(90deg, rgba(142, 142, 142, 1) 0%, rgba(46, 25, 73, 1) 100%);
 	scroll-behavior: smooth;
@@ -17,7 +17,7 @@ body {
 	line-height: 1.7;
 	-webkit-transition: all 300ms linear;
 	transition: all 300ms linear;
-	background-color: rgb(142, 142, 142);
+	background-color: rgb(78, 62, 62);
 }
 
 .firstbackground {
@@ -175,6 +175,11 @@ body {
 .center {
 	text-align: center;
 	justify-content: center;
+	align-items: center;
+}
+
+.toptext2 {
+	font-size: 30px;
 }
 
 @media only screen and (max-width: 1000px) {
@@ -333,4 +338,131 @@ span {
 
 .margin1 {
 	margin: auto;
+}
+
+/* // contact button */
+
+.btn-one {
+	color: rgb(247, 247, 247);
+	transition: all 0.3s;
+	display: table;
+	width: 100%;
+	height: 100%;
+}
+
+.btn-one span {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	transition: all 0.3s;
+}
+
+.btn-one::before {
+	content: '';
+	display: table-cell;
+	vertical-align: middle;
+	transition: all 0.3s;
+	border-top: 1px solid rgba(255, 255, 255, 0.5);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+	transform: scale(0.1, 1);
+}
+
+.btn-one:hover span {
+	letter-spacing: 2px;
+}
+
+.btn-one:hover::before {
+	opacity: 1;
+	transform: scale(1, 1);
+}
+
+.btn-one::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	transition: all 0.3s;
+	background-color: rgba(248, 142, 142, 0.1);
+}
+
+.btn-one:hover::after {
+	opacity: 0;
+	transform: scale(0.1, 1);
+}
+
+/* //contact me page all social media */
+
+a {
+	text-decoration: none;
+	color: #fff;
+}
+
+p>a:hover {
+	color: #d9d9d9;
+	text-decoration: underline;
+}
+
+
+
+
+.footer-social-icons {
+	width: 350px;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.social-icon {
+	color: #fff;
+}
+
+ul.social-icons {
+	margin-top: 10px;
+}
+
+.social-icons li {
+	display: inline-block;
+	height: 100px;
+	margin-right: 5px;
+}
+
+.social-icons a {
+	color: #fff;
+}
+
+.fa-facebook,
+.fa-twitter,
+.fa-rss,
+.fa-youtube,
+.fa-linkedin,
+.fa-github {
+	padding: 10px 14px;
+	transition: 0.5s;
+	background-color: #322f30;
+}
+
+.fa-facebook:hover {
+	background-color: #3d5b99;
+}
+
+.fa-twitter:hover {
+	background-color: #506b75;
+}
+
+.fa-rss:hover {
+	background-color: #eb8231;
+}
+
+.fa-youtube:hover {
+	background-color: #e64a41;
+}
+
+.fa-linkedin:hover {
+	background-color: #0073a4;
+}
+
+.fa-github:hover {
+	background-color: #5a32a3;
 }
