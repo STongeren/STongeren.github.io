@@ -466,3 +466,40 @@ ul.social-icons {
 .fa-github:hover {
 	background-color: #5a32a3;
 }
+
+line {
+	width: 100%;
+	height: 4rem;
+	overflow: hidden;
+	border: 1px solid black;
+	padding: 0;
+	margin-bottom: 16px;
+}
+
+
+
+/* lineup class and keyframes */
+.lineUp {
+	animation: 2.5s anim-lineUp ease-out;
+}
+
+@keyframes anim-lineUp {
+	0% {
+		opacity: 0;
+		transform: translateY(80%);
+	}
+
+	20% {
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 1;
+		transform: translateY(0%);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateY(0%);
+	}
+}
