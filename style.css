@@ -23,8 +23,8 @@ body {
 	transition: all 300ms linear;
 	background-color: rgb(78, 62, 62);
 	background: #111 !important;
-overflow-x: hidden;
-		
+	overflow-x: hidden;
+
 }
 
 .firstbackground {
@@ -566,6 +566,19 @@ line {
 		top: 40px;
 		font-size: 30px;
 		text-align: center;
+	}
+}
+
+@media only screen and (max-width: 844px) {
+	.underfullname {
+		font-size: 12px;
+	}
+
+	.miauw-text {
+		display: none;
+	}
+	.Carli {
+		display: none;
 	}
 }
 
