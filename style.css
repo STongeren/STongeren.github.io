@@ -23,6 +23,8 @@ body {
 	transition: all 300ms linear;
 	background-color: rgb(78, 62, 62);
 	background: #111 !important;
+overflow-x: hidden;
+		
 }
 
 .firstbackground {
