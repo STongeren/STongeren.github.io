@@ -557,6 +557,17 @@ line {
 	}
 }
 
+@media only screen and (max-width: 709px) {
+	.expertise {
+		font-size: 30px;
+	}
+
+	.underfullname {
+		top: 40px;
+		font-size: 30px;
+		text-align: center;
+	}
+}
 
 /* //project page  */
 
