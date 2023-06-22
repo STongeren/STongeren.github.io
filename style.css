@@ -589,6 +589,7 @@ line {
 	.lastest {
 		display: none;
 	}
+
 	.port-text {
 		display: none;
 	}
@@ -672,6 +673,7 @@ line {
 }
 
 .cardsss {
+	border: white 1px solid;
 	display: flex;
 	justify-content: center;
 	align-items: center;
