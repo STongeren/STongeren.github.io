@@ -603,12 +603,19 @@ line {
 
 .btn3 {
 	background: var(--gradient) !important;
+	/* Sets the background color of the button to the value of the --gradient variable */
 	-webkit-background-clip: text !important;
+	/* Specifies that the background should only be visible where the text is */
 	-webkit-text-fill-color: transparent !important;
+	/* Makes the text color transparent, allowing the background to show through */
 	border-image-source: var(--gradient) !important;
+	/* Sets the border image source of the button to the value of the --gradient variable */
 	text-decoration: none;
+	/* Removes any text decorations, such as underlined links, from the button */
 	transition: all .2s ease;
+	/* Adds a transition effect to all changing properties of the button with a duration of 0.2 seconds and a smooth animation curve */
 }
+
 
 .btn3:hover,
 .btn3:focus {
