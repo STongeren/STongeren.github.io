@@ -78,9 +78,13 @@ body {
   justify-content: center;
 }
 
+
 /* Example row styles */
 .rowexample {
   height: 200px;
+}
+.rowexample5 {
+  height: 110px;
 }
 
 .rowexample2 {
@@ -260,6 +264,8 @@ body {
     font-size: 1.5em;
   }
 }
+
+
 
 /* Styling for the button */
 .btn {
@@ -616,6 +622,10 @@ line {
     justify-content: center;
     align-items: center;
   }
+  .featured-text {
+    
+  position: relative;
+  }
 }
 
 /* Styling for the project page */
@@ -808,6 +818,9 @@ line {
 	z-index: 2;
   }
   
+  .featured-text {
+  
+  }
   .card:hover .details {
 	bottom: 0;
   }
