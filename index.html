@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stefano van Tongeren | Head of AI &amp; Cyber Security</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Geist:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "inverse-on-surface": "#2f3131",
+                    "surface-container-highest": "#333535",
+                    "error": "#ffb4ab",
+                    "surface-variant": "#333535",
+                    "outline-variant": "#3b4b3e",
+                    "outline": "#849586",
+                    "primary-container": "#00ff94",
+                    "on-surface-variant": "#b9cbbb",
+                    "on-tertiary-container": "#775f00",
+                    "on-primary-container": "#00713f",
+                    "surface-container-low": "#1a1c1c",
+                    "secondary-container": "#474746",
+                    "on-tertiary": "#3c2f00",
+                    "primary": "#f2fff1",
+                    "secondary-fixed": "#e4e2e1",
+                    "surface-container-lowest": "#0d0e0f",
+                    "on-tertiary-fixed-variant": "#574500",
+                    "on-background": "#e2e2e2",
+                    "surface-container": "#1e2020",
+                    "on-primary": "#00391d",
+                    "inverse-surface": "#e2e2e2",
+                    "on-surface": "#e2e2e2",
+                    "surface-tint": "#00e383",
+                    "tertiary": "#fffbf9",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "on-tertiary-fixed": "#231b00",
+                    "inverse-primary": "#006d3c",
+                    "on-error": "#690005",
+                    "background": "#121414",
+                    "secondary": "#c8c6c5",
+                    "tertiary-container": "#ffdc71",
+                    "surface": "#121414",
+                    "primary-fixed-dim": "#00e383",
+                    "tertiary-fixed-dim": "#e5c45b",
+                    "primary-fixed": "#5bffa1",
+                    "on-secondary": "#303030",
+                    "surface-dim": "#121414",
+                    "surface-bright": "#38393a",
+                    "error-container": "#93000a",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-container": "#b7b5b4",
+                    "surface-container-high": "#282a2b",
+                    "on-primary-fixed-variant": "#00522c",
+                    "on-primary-fixed": "#00210e",
+                    "on-secondary-fixed-variant": "#474746",
+                    "tertiary-fixed": "#ffe085"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "grid-line-weight": "1px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "unit": "4px",
+                    "margin-desktop": "64px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Geist"],
+                    "headline-lg-mobile": ["JetBrains Mono"],
+                    "headline-lg": ["JetBrains Mono"],
+                    "headline-xl": ["JetBrains Mono"],
+                    "code-snippet": ["JetBrains Mono"],
+                    "label-mono": ["JetBrains Mono"],
+                    "body-md": ["Geist"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+                    "code-snippet": ["13px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "label-mono": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        html { scroll-behavior: smooth; }
+        body { background-color: #09090B; }
+        .grid-line-h { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .grid-line-v { border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        .material-symbols-outlined { font-size: 18px; vertical-align: middle; }
+    </style>
+</head>
+<body class="text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 backdrop-blur-md border-b border-white/10 bg-background/80 dark:bg-background/80">
+<div class="flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop w-full">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary-container dark:text-primary-container">
+                SYS_ARCH
+            </div>
+<nav class="hidden md:flex gap-8">
+<a class="font-label-mono text-label-mono text-secondary dark:text-secondary hover:text-primary-container transition-colors duration-200 cursor-pointer active:opacity-70" href="#services">SERVICES</a>
+<a class="font-label-mono text-label-mono text-secondary dark:text-secondary hover:text-primary-container transition-colors duration-200 cursor-pointer active:opacity-70" href="#work">PROJECTS</a>
+<a class="font-label-mono text-label-mono text-secondary dark:text-secondary hover:text-primary-container transition-colors duration-200 cursor-pointer active:opacity-70" href="#experience">EXPERIENCE</a>
+<a class="font-label-mono text-label-mono text-secondary dark:text-secondary hover:text-primary-container transition-colors duration-200 cursor-pointer active:opacity-70" href="#stack">SKILLS</a>
+</nav>
+<div class="font-label-mono text-label-mono text-primary-container dark:text-primary-container cursor-pointer active:opacity-70">
+                GET_IN_TOUCH
+            </div>
+</div>
+</header>
+<main class="max-w-[1000px] mx-auto px-margin-mobile md:px-margin-desktop pt-16">
+<!-- Hero Section -->
+<section class="min-h-[819px] flex flex-col justify-center relative py-20">
+<div class="absolute top-10 right-0 flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+<span class="font-label-mono text-label-mono text-primary-container">Available for freelance</span>
+</div>
+<div class="space-y-6">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">
+                    Stefano van Tongeren
+                </h1>
+<p class="font-label-mono text-label-mono text-primary-container tracking-wider uppercase">
+                    Head of AI &amp; Cyber Security at Exeris
+                </p>
+<p class="max-w-2xl font-body-md text-body-md text-secondary-fixed-dim leading-relaxed">
+                    I build software, then I break it. Specializing in high-stakes security, generative AI implementation, and product architecture for the Dutch technology sector.
+                </p>
+<div class="flex gap-6 pt-4">
+<a class="font-label-mono text-label-mono text-on-surface border-b border-transparent hover:border-primary-container hover:text-primary-container transition-all" href="https://www.linkedin.com/in/stongeren/" target="_blank" rel="noopener noreferrer">LINKEDIN</a>
+<a class="font-label-mono text-label-mono text-on-surface border-b border-transparent hover:border-primary-container hover:text-primary-container transition-all" href="mailto:stefanovantongeren@gmail.com">EMAIL</a>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="py-20 grid-line-h" id="services">
+<div class="mb-12">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// 01 / services</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group border border-white/5 p-6 hover:border-primary-container transition-all duration-300">
+<div class="mb-6 text-primary-container">
+<span class="material-symbols-outlined" data-icon="shield_lock" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">Application Security</h3>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">
+                        Penetration testing, security hardening, and vulnerability assessments. Web apps, APIs, and OT/ICS environments.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="group border border-white/5 p-6 hover:border-primary-container transition-all duration-300">
+<div class="mb-6 text-primary-container">
+<span class="material-symbols-outlined" data-icon="memory" style="font-variation-settings: 'FILL' 1;">memory</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">AI Engineering</h3>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">
+                        Building AI-powered features and tooling. From LLM integrations and chatbots to local inference pipelines.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="group border border-white/5 p-6 hover:border-primary-container transition-all duration-300">
+<div class="mb-6 text-primary-container">
+<span class="material-symbols-outlined" data-icon="terminal" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile mb-4">SaaS Development</h3>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">
+                        Full-stack product development from zero to production. Next.js, Supabase, Postgres, TypeScript.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Projects Section -->
+<section class="py-20 grid-line-h" id="work">
+<div class="mb-12">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// 02 / work</span>
+</div>
+<div class="flex flex-col">
+<!-- Project 1 -->
+<div class="py-12 grid-line-h group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">[ SAAS_PRODUCT ]</span>
+</div>
+<div class="md:col-span-6">
+<h3 class="font-headline-lg text-headline-lg mb-4 group-hover:text-primary-container transition-colors">RecruitFlow</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-4">
+                                Onboarding SaaS platform for Dutch staffing agencies. Built from scratch, two security hardening cycles completed.
+                            </p>
+<div class="flex flex-wrap gap-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Next.js</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Supabase</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// PostgreSQL</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// TypeScript</span>
+</div>
+</div>
+<div class="md:col-span-3 text-right">
+<span class="font-label-mono text-label-mono text-primary-container">Creator &amp; Lead</span>
+</div>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="py-12 grid-line-h group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">[ CORPORATE_WEB ]</span>
+</div>
+<div class="md:col-span-6">
+<h3 class="font-headline-lg text-headline-lg mb-4 group-hover:text-primary-container transition-colors">Exeris Website</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-4">
+                                Corporate website for Exeris, designed and shipped end to end with a focus on performance and minimalist aesthetic.
+                            </p>
+<div class="flex flex-wrap gap-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Next.js</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Vercel</span>
+</div>
+</div>
+<div class="md:col-span-3 text-right">
+<span class="font-label-mono text-label-mono text-primary-container">Designer &amp; Developer</span>
+</div>
+</div>
+</div>
+<!-- Project 3 -->
+<div class="py-12 grid-line-h group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">[ AI_AGENT ]</span>
+</div>
+<div class="md:col-span-6">
+<h3 class="font-headline-lg text-headline-lg mb-4 group-hover:text-primary-container transition-colors">Exeris FAQ Chatbot</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-4">
+                                AI-powered FAQ chatbot integrated into the Exeris website for automated customer support and lead qualification.
+                            </p>
+<div class="flex flex-wrap gap-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// AI</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Next.js</span>
+</div>
+</div>
+<div class="md:col-span-3 text-right">
+<span class="font-label-mono text-label-mono text-primary-container">Builder</span>
+</div>
+</div>
+</div>
+<!-- Project 4 -->
+<div class="py-12 grid-line-h group cursor-pointer">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<div class="md:col-span-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">[ DATA_PIPELINE ]</span>
+</div>
+<div class="md:col-span-6">
+<h3 class="font-headline-lg text-headline-lg mb-4 group-hover:text-primary-container transition-colors">News Intelligence Bot</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-4">
+                                Local 24/7 news collection and summarization system for AI, cybersecurity, and crypto news with Telegram alerts.
+                            </p>
+<div class="flex flex-wrap gap-3">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Python</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// Ollama</span>
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// pgvector</span>
+</div>
+</div>
+<div class="md:col-span-3 text-right">
+<span class="font-label-mono text-label-mono text-primary-container">Builder</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Experience Section -->
+<section class="py-20 grid-line-h" id="experience">
+<div class="mb-12">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// 03 / experience</span>
+</div>
+<div class="space-y-16">
+<!-- Entry 1 -->
+<div class="flex flex-col md:flex-row gap-8">
+<div class="md:w-1/3 font-label-mono text-label-mono text-secondary-fixed-dim">
+                        2025 — PRESENT
+                    </div>
+<div class="md:w-2/3">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Head of AI &amp; Cyber Security @ Exeris</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-6 italic">Sole IT function.</p>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">
+                            Own all AI and security decisions: architecture, implementation, hardening, operations. Built RecruitFlow, the Exeris website, and internal AI tooling.
+                        </p>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="flex flex-col md:flex-row gap-8">
+<div class="md:w-1/3 font-label-mono text-label-mono text-secondary-fixed-dim">
+                        2024 — PRESENT
+                    </div>
+<div class="md:w-2/3">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Cybersecurity Student @ Hogeschool van Amsterdam</h3>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-6 italic">Ad Cyber Security program.</p>
+<p class="font-body-sm text-body-sm text-secondary-fixed-dim">
+                            Focus areas: penetration testing, OT/ICS security, OSINT, AI red teaming. Hands-on with Siemens S7-1200 PLCs, Modbus, and Metasploit.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Skills Section -->
+<section class="py-20 grid-line-h" id="stack">
+<div class="mb-12">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// 04 / stack</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-gutter gap-y-16">
+<!-- Group 1 -->
+<div>
+<h4 class="font-label-mono text-label-mono text-primary-container mb-6 uppercase tracking-widest">Security</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-3">
+<span class="font-label-mono text-label-mono text-on-surface">Penetration Testing</span>
+<span class="font-label-mono text-label-mono text-on-surface">Application Security</span>
+<span class="font-label-mono text-label-mono text-on-surface">OT/ICS</span>
+<span class="font-label-mono text-label-mono text-on-surface">SCADA</span>
+<span class="font-label-mono text-label-mono text-on-surface">OSINT</span>
+<span class="font-label-mono text-label-mono text-on-surface">Red Teaming</span>
+<span class="font-label-mono text-label-mono text-on-surface">AI Red Teaming</span>
+<span class="font-label-mono text-label-mono text-on-surface">OWASP</span>
+<span class="font-label-mono text-label-mono text-on-surface">Metasploit</span>
+</div>
+</div>
+<!-- Group 2 -->
+<div>
+<h4 class="font-label-mono text-label-mono text-primary-container mb-6 uppercase tracking-widest">Development</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-3">
+<span class="font-label-mono text-label-mono text-on-surface">Next.js</span>
+<span class="font-label-mono text-label-mono text-on-surface">React</span>
+<span class="font-label-mono text-label-mono text-on-surface">TypeScript</span>
+<span class="font-label-mono text-label-mono text-on-surface">Python</span>
+<span class="font-label-mono text-label-mono text-on-surface">Node.js</span>
+<span class="font-label-mono text-label-mono text-on-surface">Tailwind CSS</span>
+<span class="font-label-mono text-label-mono text-on-surface">REST APIs</span>
+</div>
+</div>
+<!-- Group 3 -->
+<div>
+<h4 class="font-label-mono text-label-mono text-primary-container mb-6 uppercase tracking-widest">AI</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-3">
+<span class="font-label-mono text-label-mono text-on-surface">LLMs</span>
+<span class="font-label-mono text-label-mono text-on-surface">Prompt Engineering</span>
+<span class="font-label-mono text-label-mono text-on-surface">RAG</span>
+<span class="font-label-mono text-label-mono text-on-surface">Ollama</span>
+<span class="font-label-mono text-label-mono text-on-surface">AI Agents</span>
+<span class="font-label-mono text-label-mono text-on-surface">AI Security</span>
+</div>
+</div>
+<!-- Group 4 -->
+<div>
+<h4 class="font-label-mono text-label-mono text-primary-container mb-6 uppercase tracking-widest">Infrastructure</h4>
+<div class="flex flex-wrap gap-x-4 gap-y-3">
+<span class="font-label-mono text-label-mono text-on-surface">PostgreSQL</span>
+<span class="font-label-mono text-label-mono text-on-surface">Supabase</span>
+<span class="font-label-mono text-label-mono text-on-surface">Vercel</span>
+<span class="font-label-mono text-label-mono text-on-surface">Git</span>
+<span class="font-label-mono text-label-mono text-on-surface">Linux</span>
+<span class="font-label-mono text-label-mono text-on-surface">Docker</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Contact Section -->
+<section class="py-20 grid-line-h" id="contact">
+<div class="mb-12">
+<span class="font-label-mono text-label-mono text-secondary-fixed-dim">// 05 / contact</span>
+</div>
+<div class="max-w-xl">
+<h2 class="font-headline-xl text-headline-xl mb-6">Get in touch</h2>
+<p class="font-body-md text-body-md text-secondary-fixed-dim mb-12">
+                    Open to freelance projects, security assessments, and interesting conversations regarding the intersection of AI and Cybersecurity.
+                </p>
+<div class="space-y-6">
+<a class="block font-headline-lg-mobile text-headline-lg-mobile hover:text-primary-container transition-colors underline decoration-white/10 underline-offset-8" href="mailto:stefanovantongeren@gmail.com">
+                        stefanovantongeren@gmail.com
+                    </a>
+<div class="flex gap-8 pt-4">
+<a class="font-label-mono text-label-mono text-on-surface hover:text-primary-container before:content-['&gt;_'] transition-all" href="https://www.linkedin.com/in/stongeren/" target="_blank" rel="noopener noreferrer">LINKEDIN</a>
+<a class="font-label-mono text-label-mono text-on-surface hover:text-primary-container before:content-['&gt;_'] transition-all" href="#">GITHUB</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 border-t border-white/10 bg-background dark:bg-background">
+<div class="flex flex-col md:flex-row justify-between items-center gap-gutter px-margin-mobile md:px-margin-desktop">
+<div class="font-label-mono text-label-mono text-on-surface">
+                STEFANO_VAN_TONGEREN
+            </div>
+<div class="font-label-mono text-label-mono text-secondary-fixed-dim uppercase">
+                © 2025 SYSTEM_BUILDER. ALL RIGHTS RESERVED.
+            </div>
+<div class="flex gap-6">
+<a class="font-label-mono text-label-mono text-secondary-fixed-dim hover:text-primary-container transition-all duration-300 before:content-['&gt;_']" href="#">RESUME</a>
+</div>
+</div>
+</footer>
+</body></html>
