@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ansem's drained $2.57M didn't sit still: traced to 43.87 BTC and 951.79 ETH | Stefano van Tongeren</title>
+<meta name="description" content="An independent onchain trace of the 24 November 2026 Ansem wallet drain across Solana, Arbitrum, Bitcoin and Ethereum. Every transfer linked, and what the chain can and cannot tell us.">
+<meta name="author" content="Stefano van Tongeren">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script>try{var t=localStorage.getItem('0xsurgeon:theme');if(t==='night')document.documentElement.setAttribute('data-theme','dark');else if(t==='day')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+<link rel="canonical" href="https://stongeren.github.io/writeups/ansem-drain/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ansem's drained $2.57M didn't sit still. Here is where every coin went.">
+<meta property="og:description" content="Reports said the money was still sitting in one wallet. Four hours later it was gone. 87.49M $ANSEM sold, $4.15M through one address, now 43.87 BTC and 951.79 ETH. Every transfer linked.">
+<meta property="og:url" content="https://stongeren.github.io/writeups/ansem-drain/">
+<meta property="og:image" content="https://stongeren.github.io/writeups/ansem-drain/share.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* unslop direction. Product: an independent onchain trace of the Ansem wallet drain, for crypto readers who want to check every step. Character: exact, sober, forensic. World: a case file on an evidence table, explorer printouts and ledgers under a desk lamp. Moments: the cluster map and the evidence exhibits. Signature: a chain-coloured dot before every address and chain reference. */
+/* Layout: a forensic case file. One narrow reading column; the money-flow diagram and the ledger break wider. Chain colors carry meaning: Solana violet, Arbitrum blue, Bitcoin orange. */
+:root{
+  --paper:#f2f4f6; --sheet:#ffffff; --ink:#151a21; --muted:#5b6472; --rule:#d5dae1;
+  --sol:#6d3fc9; --arb:#1f63c6; --btc:#c76a0a; --flag:#b4232c;
+  --sol-bg:#efe9fb; --arb-bg:#e7effb; --btc-bg:#fbf0e3; --eth:#3f4fb8; --eth-bg:#eaecfa;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0f1318; --sheet:#161b22; --ink:#e6e9ee; --muted:#98a1ae; --rule:#2a313b;
+  --sol:#a98af0; --arb:#6aa3f2; --btc:#f0a24a; --flag:#f06a72;
+  --sol-bg:#221b35; --arb-bg:#152338; --btc-bg:#2e2113; --eth:#9aa8ff; --eth-bg:#1c2140; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f1318; --sheet:#161b22; --ink:#e6e9ee; --muted:#98a1ae; --rule:#2a313b;
+  --sol:#a98af0; --arb:#6aa3f2; --btc:#f0a24a; --flag:#f06a72;
+  --sol-bg:#221b35; --arb-bg:#152338; --btc-bg:#2e2113; --eth:#9aa8ff; --eth-bg:#1c2140; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.62;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 4rem}
+a{color:var(--arb);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--arb);outline-offset:2px;border-radius:2px}
+.col{max-width:44rem;margin:0 auto}
+.wide{max-width:72rem;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.08;margin:0}
+h1{font-size:clamp(2.4rem,6vw,4rem);font-weight:500;letter-spacing:-.02em;line-height:1.04}
+h2{font-size:1.875rem;font-weight:500;margin-top:64px;letter-spacing:-.01em}
+h3{font-size:1.25rem;font-weight:500}
+p{margin:0}
+.stack>*+*{margin-top:1rem}
+.eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:0;color:var(--muted)}
+.mono,code{font-family:var(--f-mono);font-size:.86em;overflow-wrap:anywhere}
+.num{font-variant-numeric:tabular-nums}
+
+/* masthead */
+header{padding-block:3.5rem 2rem}
+.case{display:flex;flex-wrap:wrap;gap:4px 20px;margin-bottom:20px}
+.dek{font-size:1.2rem;color:var(--muted);max-width:38rem;margin-top:1.1rem}
+.chains{display:flex;gap:8px 20px;flex-wrap:wrap;margin-top:24px}
+.chip{font-size:14px;color:var(--muted);display:inline-flex;align-items:center;gap:8px}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--k)}
+.chip.eth{--k:var(--eth)} .chip.sol{--k:var(--sol)} .chip.arb{--k:var(--arb)} .chip.btc{--k:var(--btc)}
+
+/* readout strip */
+.readout{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);margin-top:2.2rem}
+.readout div{padding:16px 16px 20px 0;min-width:0}
+.readout div+div{padding-left:16px;border-left:1px solid var(--rule)}
+.readout b{display:block;font-family:var(--f-display);font-size:clamp(1.75rem,3.6vw,2.5rem);font-weight:500;font-variant-numeric:tabular-nums;line-height:1}
+.readout span{display:block;font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}
+.readout .sol b{color:var(--sol)} .readout .arb b{color:var(--arb)} .readout .btc b{color:var(--btc)} .readout .eth b{color:var(--eth)}
+@media (max-width:640px){.readout{grid-template-columns:repeat(2,minmax(0,1fr))}.readout div:nth-child(3){border-left:0;padding-left:0}.readout div:nth-child(n+3){border-top:1px solid var(--rule)}}
+
+/* diagram */
+.figure{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:1.2rem 1.2rem .8rem;margin-top:2.4rem}
+.scroll{overflow-x:auto}
+.figure svg{display:block;min-width:880px;width:100%;height:auto}
+.figure figcaption{font-size:.85rem;color:var(--muted);margin-top:.6rem}
+svg text{font-family:var(--f-body)}
+svg .t-mono{font-family:var(--f-mono)}
+
+/* addresses */
+.addr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:12px 16px;margin-top:8px}
+.addr.eth{--k:var(--eth)} .addr.sol{--k:var(--sol)} .addr.arb{--k:var(--arb)} .addr.btc{--k:var(--btc)}
+.addr .lab::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--k,var(--muted));margin-right:8px;transform:translateY(-1px)}
+.addr .mono{flex:1 1 18rem;min-width:0;font-size:14px}
+.addr .mono.long{font-size:12.5px;letter-spacing:-.01em}
+.addr .lab{font-size:13px;color:var(--muted);flex-basis:100%}
+.btn{font:500 13px var(--f-body);letter-spacing:0;background:transparent;color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:4px 12px;min-height:28px;display:inline-flex;align-items:center;cursor:pointer;text-decoration:none;white-space:nowrap;transition:border-color .15s cubic-bezier(.22,1,.36,1),background-color .15s cubic-bezier(.22,1,.36,1)}
+.btn:active{transform:scale(.98)}
+.btn:hover{border-color:var(--muted);background:var(--paper)}
+
+/* inflow bar */
+.bar{display:flex;height:40px;border-radius:8px;overflow:hidden;margin-top:1rem}
+.bar i{display:block;height:100%}
+.legend{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;margin-top:12px;font-size:15px;align-items:baseline}
+.sw{width:.8rem;height:.8rem;border-radius:2px;display:inline-block;transform:translateY(1px)}
+
+/* timeline */
+.tl{list-style:none;margin:1.4rem 0 0;padding:0;border-left:2px solid var(--rule)}
+.tl li{position:relative;padding:0 0 20px 20px;display:grid;grid-template-columns:6.6rem 1fr;gap:.2rem 1rem}
+.tl li::before{content:"";position:absolute;left:-6px;top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--k,var(--muted));box-shadow:0 0 0 3px var(--paper)}
+.tl .eth{--k:var(--eth)} .tl .sol{--k:var(--sol)} .tl .arb{--k:var(--arb)} .tl .btc{--k:var(--btc)} .tl .x{--k:var(--ink)}
+.tl time{font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums;color:var(--muted);padding-top:.1rem}
+.tl li.key time{color:var(--flag);font-weight:500}
+.tl p{min-width:0}
+@media (max-width:520px){.tl li{grid-template-columns:1fr}}
+
+/* callout */
+.pull{border-top:2px solid var(--btc);border-bottom:1px solid var(--rule);padding:1.2rem 0;margin-top:2rem}
+.pull p{font-family:var(--f-display);font-size:1.625rem;font-weight:500;line-height:1.25;text-wrap:balance}
+
+/* two readings */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.split section{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;padding:20px 24px;min-width:0}
+.split ul{margin:12px 0 0;padding-left:20px}
+.split li+li{margin-top:8px}
+@media (max-width:680px){.split{grid-template-columns:1fr}}
+.tag{font-family:var(--f-mono);font-size:12px;letter-spacing:0;color:var(--muted);border:1px solid var(--rule);border-radius:4px;padding:0 4px;margin-left:8px;white-space:nowrap}
+
+/* ledger */
+details{background:var(--sheet);border:1px solid var(--rule);border-radius:14px;margin-top:16px}
+summary{cursor:pointer;padding:16px 20px;font-weight:500}
+.tw{overflow-x:auto;padding:0 1.1rem 1rem}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.84rem}
+th,td{text-align:left;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:13px;letter-spacing:0;color:var(--muted);font-weight:500}
+td.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td .mono{font-size:.8rem}
+ol.q{padding-left:1.3rem;margin:1rem 0 0} ol.q li+li{margin-top:.5rem}
+.src{font-size:.88rem;color:var(--muted)} .src li+li{margin-top:.35rem}
+footer{margin-top:3.5rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+
+/* cluster map: deliberately dark in both themes, like an analysis canvas */
+.map{background:#0b1020;color:#dfe5f2;border-radius:16px;padding:20px 24px 16px;margin-top:2.4rem;position:relative}
+.maphead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:.6rem}
+.mapeye{color:#8a95ad}
+.maptitle{margin-top:.3rem;color:#f2f5fb;font-size:1.5rem}
+.maplegend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.8rem;color:#b8c1d6}
+.maplegend span{display:inline-flex;align-items:center;gap:.35rem}
+.maplegend i{width:.75rem;height:.75rem;border-radius:50%;display:inline-block}
+.map svg{display:block;min-width:860px;width:100%;height:auto}
+.map svg .node{cursor:pointer}
+.map svg text{font-family:var(--f-mono);pointer-events:none}
+.map figcaption{font-size:.82rem;color:#8a95ad;margin-top:.5rem}
+.tip{position:absolute;z-index:5;max-width:19rem;background:#141b30;border:1px solid #2c3757;border-radius:10px;padding:12px 16px;font-size:.8rem;line-height:1.45;color:#dfe5f2;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+.tip b{display:block;font-family:var(--f-display);font-size:15px;font-weight:500}
+.tip code{color:#9fb4ff}
+.exhibits{display:grid;gap:2.6rem;margin-top:1.6rem;position:relative;left:50%;transform:translateX(-50%);width:min(72rem,calc(100vw - 2*max(16px,env(safe-area-inset-left,0px))))}
+.ex{min-width:0}
+.exhead{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;border-top:2px solid var(--ink);padding-top:.7rem}
+.exl{font-family:var(--f-mono);font-size:13px;letter-spacing:0;color:var(--muted);font-weight:400}
+.exhead h3{font-size:1.3rem}
+.exbody{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:12px}
+.eximgs{display:grid;gap:8px;min-width:0}
+.frame{position:relative;display:block;padding:0;border:1px solid var(--rule);border-radius:12px;overflow:hidden;background:#000;cursor:zoom-in;width:100%}
+.frame img{display:block;width:100%;height:auto;max-width:100%}
+.hl{position:absolute;border:2px solid #ffd43b;border-radius:6px;pointer-events:none}
+.exnote{display:grid;gap:8px;justify-items:start;min-width:0}
+.exkey{font-family:var(--f-mono);font-size:16px;font-weight:500;background:var(--sheet);border:1px solid var(--rule);color:var(--ink);padding:8px 12px;border-radius:8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.decoded{background:#0d1117;color:#d6dde8;border:1px solid var(--rule);border-radius:12px;font-family:var(--f-mono);font-size:.9rem;overflow-x:auto}
+.dhead{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:.6rem .9rem;border-bottom:1px solid #263041;color:#8b96a8;font-size:.78rem}
+.drow{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:1rem;padding:.5rem .9rem;border-bottom:1px solid #1b2230}
+.drow:last-child{border-bottom:0}
+.dk{color:#8b96a8}
+.dv{overflow-wrap:anywhere}
+.dv em{font-style:normal;color:#8b96a8;margin-left:.4rem}
+.dv.mark{color:#0d1117;background:#ffd43b;padding:0 .35rem;border-radius:3px;justify-self:start}
+@media (max-width:520px){.drow{grid-template-columns:1fr;gap:.1rem}}
+dialog.lb{border:0;padding:0;background:transparent;max-width:96vw;max-height:94vh}
+dialog.lb::backdrop{background:rgba(5,8,14,.86)}
+dialog.lb img{display:block;max-width:96vw;max-height:88vh;width:auto;height:auto;border-radius:6px}
+dialog.lb p{color:#dfe5f2;font-size:.85rem;text-align:center;margin-top:.5rem}
+
+
+/* big screens: a wider column and a larger type size, so the page fills the screen without long lines */
+@media (min-width:1200px){
+  body{font-size:18.5px}
+  .col{max-width:54rem}
+  .wide{max-width:84rem}
+  nav.byline{max-width:54rem;font-size:14px}
+  .dek{max-width:46rem}
+  h1{font-size:clamp(3.4rem,4.6vw,4.8rem)}
+  h2{font-size:2.15rem}
+}
+@media (min-width:1600px){
+  body{font-size:19.5px}
+  .col{max-width:58rem}
+  nav.byline{max-width:58rem}
+  .dek{max-width:50rem}
+  .wide{max-width:90rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="byline" aria-label="Site">
+  <a href="/cv/">Stefano van Tongeren</a><span>Independent onchain research</span>
+  <button class="theme" type="button" aria-label="Switch between light and dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="moon" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/><g class="sun"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M4.9 19.1l1.7-1.7M17.4 6.6l1.7-1.7"/></g></svg><span class="theme-l">Dark</span></button>
+  <a class="byline-back" href="/cv/">Portfolio</a>
+</nav>
+<script>
+(function(){var b=document.querySelector('.byline .theme'),r=document.documentElement;
+function dark(){var a=r.getAttribute('data-theme');return a?a==='dark':matchMedia('(prefers-color-scheme: dark)').matches}
+function paint(){b.querySelector('.theme-l').textContent=dark()?'Light':'Dark';b.classList.toggle('is-dark',dark())}
+b.addEventListener('click',function(){var d=!dark();r.setAttribute('data-theme',d?'dark':'light');try{localStorage.setItem('0xsurgeon:theme',d?'night':'day')}catch(e){}paint()});paint()})();
+</script>
+<style>
+.byline{max-width:44rem;margin:0 auto;padding:18px 0 0;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font:500 13px/1.4 var(--f-mono);color:var(--muted)}
+.byline a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule)}
+.byline a:hover{border-color:currentColor}
+.byline .theme{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);font:inherit;cursor:pointer}
+.byline .theme:hover{border-color:var(--muted)}
+.byline .theme svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.byline .theme .sun{display:none} .byline .theme.is-dark .sun{display:inline} .byline .theme.is-dark .moon{display:none}
+@media (max-width:560px){.byline > span{display:none}.byline{padding-top:14px}}
+</style>
+<header class="col">
+  <div class="case eyebrow"><span>Onchain trace</span><span>Filed 25 Nov 2026</span><span>Updated 26 Nov</span><span>All times UTC</span></div>
+  <h1>Ansem's drained $2.57M didn't sit still. I traced it to the last coin.</h1>
+  <p class="dek">On 24 November a wallet tied to Ansem dumped 87.5M $ANSEM. He says his Bullpen account was hacked. Critics say he sold himself. I followed every dollar across four chains. The trail does not stop at $2.57M: a day later the same receiving address took in another $1.58M on Ethereum. This is where all of it ended up, and what the chain can and cannot tell us.</p>
+  <div class="chains"><span class="chip sol">Solana</span><span class="chip arb">Arbitrum</span><span class="chip btc">Bitcoin</span><span class="chip eth">Ethereum</span></div>
+  <div class="readout">
+    <div class="sol"><b class="num">87.49M</b><span>$ANSEM sold in 25 txs, 08:57 to 10:08</span></div>
+    <div class="arb"><b class="num">$4.15M</b><span>USDC through one address on two chains</span></div>
+    <div class="btc"><b class="num">43.87</b><span>BTC in one address, swept 25 Nov</span></div>
+    <div class="eth"><b class="num">951.79</b><span>ETH in one address, swept the same minute</span></div>
+  </div></div>
+</header>
+
+<figure class="wide map" aria-labelledby="mapcap">
+  <div class="maphead">
+    <div><span class="eyebrow mapeye">Cluster map</span><h2 class="maptitle">Every wallet in the trail</h2></div>
+    <div class="maplegend" id="legend"></div>
+  </div>
+  <div class="scroll" id="mapscroll"><svg id="bubbles" viewBox="0 0 1100 880" role="img" aria-label="Bubble map of the wallets in five clusters, linked by the transfers between them. Bubble size is the dollar value that passed through each wallet."></svg></div>
+  <div class="tip" id="tip" hidden></div>
+  <figcaption id="mapcap">Bubble size is the dollar value that passed through each wallet. Colour is the cluster. Lines are transfers. Hover a bubble for details, click it to open the explorer, drag to rearrange.</figcaption>
+</figure>
+
+<main class="col">
+
+<h2>The day, minute by minute</h2>
+<ol class="tl">
+  <li class="btc key"><time>04:42:50</time><p>A fresh Bitcoin address, <code>bc1qhvzh…</code>, receives its first deposits. It has no history before this moment. Later it becomes the main exit.</p></li>
+  <li class="sol key"><time>06:45:07</time><p>Earliest trace of the incident. An old Solana wallet, <code>GYfEZvZT</code>, created in April 2024 and silent since June, wakes up.</p></li>
+  <li class="sol key"><time>06:46:32</time><p>The selling wallet's cash goes first: 515,278 USDC and 404.67 SOL leave "ansemconzimp" for a brand-new wallet. This is 2 hours and 10 minutes before the first $ANSEM sale.</p></li>
+  <li class="arb"><time>06:57:39</time><p>A dry run. 0.39 SOL is pushed through the whole route and arrives at the Arbitrum receiver <code>0xAC33</code> as 27 USDC.</p></li>
+  <li class="arb"><time>07:52-07:58</time><p>After a $1 test, the 515,278 USDC and the 404.67 SOL follow the same route. 543,837 USDC lands at <code>0xAC33</code>.</p></li>
+  <li class="sol key"><time>08:57:09</time><p>First $ANSEM sale from the "ansemconzimp" wallet. 25 sales follow, 87,485,941 tokens in total. The price falls about 60% within an hour.</p></li>
+  <li class="x"><time>09:39</time><p>Lookonchain: Ansem "appears to be dumping his holdings".</p></li>
+  <li class="x"><time>09:55</time><p>Lookonchain: "It looks like Ansem was indeed hacked." Proceeds are arriving at <code>0xAC33</code> via the Relay bridge.</p></li>
+  <li class="sol"><time>10:08:23</time><p>Last $ANSEM sale.</p></li>
+  <li class="x"><time>10:59</time><p>Ansem posts: "pump wallet is hacked", and points to unauthorized access to his Bullpen profile, where his Solana private key was imported.</p></li>
+  <li class="x"><time>14:08</time><p>Lookonchain: the 2.57M USDC is "still sitting in wallet 0xAC33".</p></li>
+  <li class="arb key"><time>17:49-18:48</time><p>All of it, bar about $5, leaves through BridgersSwap in 14 swaps.</p></li>
+  <li class="btc"><time>19:19, 20:58</time><p>Bitcoin payouts arrive at four addresses: 42.24 BTC in total.</p></li>
+  <li class="eth key"><time>25 Nov 03:16</time><p>Second wave. The same address, <code>0xAC33</code>, now on Ethereum, takes in 1,578,932 USDC from one active wallet in 24 transfers, starting with a $10 test.</p></li>
+  <li class="eth"><time>25 Nov 03:35</time><p>Split 500K / 500K / 579K over three fresh wallets, one more hop each, then swapped to ETH through a PMM swap contract between 05:14 and 05:33.</p></li>
+  <li class="eth key"><time>25 Nov 16:46</time><p>All of the ETH lands in one address within two minutes: 951.79 ETH.</p></li>
+  <li class="btc key"><time>25 Nov 16:47</time><p>Day two. Between 16:47 and 17:11 all four Bitcoin addresses are emptied in five transactions. Everything, 43.87 BTC, lands in one new taproot address.</p></li>
+</ol>
+
+<h2>Not all of the $2.57M came from the sale</h2>
+<div class="stack" style="margin-top:1rem">
+<p>News reports put the total at the receiving address at $2.57M. That number is right, but about a fifth of it was never token sales. It was cash that sat in the selling wallet, and it left two hours before the dump.</p>
+</div>
+<div class="bar" role="img" aria-label="Inflow split: 78.8 percent from token sales via Relay, 21.2 percent cash moved before the dump, under 0.1 percent other">
+  <i style="width:78.78%;background:var(--sol)"></i><i style="width:21.19%;background:var(--muted)"></i><i style="width:.03%;background:var(--btc)"></i>
+</div>
+<div class="legend num">
+  <span class="sw" style="background:var(--sol)"></span><span>Sale proceeds, via Relay solvers (08:40-10:42)</span><span class="mono">2,021,930.64</span>
+  <span class="sw" style="background:var(--muted)"></span><span>Cash from the same wallet, moved before the dump (06:46, arrived 06:57-07:58)</span><span class="mono">543,836.67</span>
+  <span class="sw" style="background:var(--btc)"></span><span>Other small inflows</span><span class="mono">659.22</span>
+</div>
+<div class="addr arb"><span class="lab">Arbitrum receiver</span><span class="mono">0xAC33748aAd09CEA8E50484Cc0Fa168dc23531B4d</span><button class="btn" type="button" data-copy="0xAC33748aAd09CEA8E50484Cc0Fa168dc23531B4d">Copy</button><a class="btn" href="https://arbiscan.io/address/0xAC33748aAd09CEA8E50484Cc0Fa168dc23531B4d" target="_blank" rel="noopener">Arbiscan</a></div>
+
+<h2>The exit</h2>
+<div class="stack" style="margin-top:1rem">
+<p>At 14:08 Lookonchain noted the money had not moved. Less than four hours later it was gone, in two routes.</p>
+<p><strong>Route A.</strong> 1,066,426 USDC went straight from <code>0xAC33</code> into BridgersSwap, a cross-chain swap service, in five swaps.</p>
+<p><strong>Route B.</strong> 1,500,000 USDC went to three fresh wallets, 500,000 each. Each passed it into BridgersSwap in three chunks, within 9 minutes of receiving it. They share the same EIP-7702 delegate contract as <code>0xAC33</code>, and this hop is their only USDC history.</p>
+</div>
+<div class="addr arb"><span class="lab">Route B wallet 1</span><span class="mono">0x0bf5c56c12d52379c00f525f73b33e3ada84b105</span><button class="btn" type="button" data-copy="0x0bf5c56c12d52379c00f525f73b33e3ada84b105">Copy</button><a class="btn" href="https://arbiscan.io/address/0x0bf5c56c12d52379c00f525f73b33e3ada84b105" target="_blank" rel="noopener">Arbiscan</a></div>
+<div class="addr arb"><span class="lab">Route B wallet 2</span><span class="mono">0x271114cb6226c360ea9db38524c1ec1664d4c9a7</span><button class="btn" type="button" data-copy="0x271114cb6226c360ea9db38524c1ec1664d4c9a7">Copy</button><a class="btn" href="https://arbiscan.io/address/0x271114cb6226c360ea9db38524c1ec1664d4c9a7" target="_blank" rel="noopener">Arbiscan</a></div>
+<div class="addr arb"><span class="lab">Route B wallet 3</span><span class="mono">0x4e9e3bbd85962cdc61d95237cdf113d22c008ba8</span><button class="btn" type="button" data-copy="0x4e9e3bbd85962cdc61d95237cdf113d22c008ba8">Copy</button><a class="btn" href="https://arbiscan.io/address/0x4e9e3bbd85962cdc61d95237cdf113d22c008ba8" target="_blank" rel="noopener">Arbiscan</a></div>
+
+<h2>Into Bitcoin</h2>
+<div class="stack" style="margin-top:1rem">
+<p>BridgersSwap writes the destination chain and address into each swap's input data as plain text. Decoding all 14 USDC swaps gives the same answer every time: Bitcoin. Route A paid out to one address, and each Route B wallet to its own.</p>
+</div>
+<div class="addr btc"><span class="lab">Route A · 17.55 BTC from the swaps (19.18 BTC on the address in total)</span><span class="mono">bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0</span><button class="btn" type="button" data-copy="bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0">Copy</button><a class="btn" href="https://mempool.space/address/bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0" target="_blank" rel="noopener">mempool</a></div>
+<div class="addr btc"><span class="lab">Route B wallet 1 · 8.22 BTC</span><span class="mono">bc1qsayt892n8c3jrkeewcg8j8aynltxttnctxnm0m</span><button class="btn" type="button" data-copy="bc1qsayt892n8c3jrkeewcg8j8aynltxttnctxnm0m">Copy</button><a class="btn" href="https://mempool.space/address/bc1qsayt892n8c3jrkeewcg8j8aynltxttnctxnm0m" target="_blank" rel="noopener">mempool</a></div>
+<div class="addr btc"><span class="lab">Route B wallet 2 · 8.22 BTC</span><span class="mono">bc1qr3ttqnr0e50t6vqcl5n4l5azx0866ppql2fxyh</span><button class="btn" type="button" data-copy="bc1qr3ttqnr0e50t6vqcl5n4l5azx0866ppql2fxyh">Copy</button><a class="btn" href="https://mempool.space/address/bc1qr3ttqnr0e50t6vqcl5n4l5azx0866ppql2fxyh" target="_blank" rel="noopener">mempool</a></div>
+<div class="addr btc"><span class="lab">Route B wallet 3 · 8.24 BTC</span><span class="mono">bc1qn9qsy8auwh6slgmftpmc4qmuhz9zk58a0x7c27</span><button class="btn" type="button" data-copy="bc1qn9qsy8auwh6slgmftpmc4qmuhz9zk58a0x7c27">Copy</button><a class="btn" href="https://mempool.space/address/bc1qn9qsy8auwh6slgmftpmc4qmuhz9zk58a0x7c27" target="_blank" rel="noopener">mempool</a></div>
+
+<div class="pull"><p>The main Bitcoin exit address received its first deposits at 04:42:50, four hours and fourteen minutes before the first $ANSEM sale.</p></div>
+<p style="margin-top:1rem">Whoever ran this had the Bitcoin side ready in advance. That fits a planned theft. It also fits a planned sale.</p>
+<p style="margin-top:1rem">Those first deposits came from a taproot peel chain: eight addresses, each funded hours earlier, each paying a small amount to <code>bc1qhvzh</code> and passing the rest to a fresh address. At 13:54 another 1.59 BTC arrived from <code>12zacgJDkFf4GF7sqq83vRLFhENeRX3Vzh</code>, a wallet active since 14 November. On day two all of it was swept together with the swap money, so one owner controls both.</p>
+
+<h2>Day two: one address</h2>
+<div class="stack" style="margin-top:1rem">
+<p>On 25 November, between 16:47 and 17:11 UTC, all four Bitcoin addresses were emptied. Every coin went to the same new taproot address. That includes the 1.63 BTC that sat on the main exit address before the swaps, so whoever controls the swap money controls that too.</p>
+</div>
+<div class="addr btc"><span class="lab">Consolidation address · 43.87 BTC, unspent at the time of writing</span><span class="mono">bc1pgxwl0mj9y3k7znz7zaax9yystymk473g72mqnn66ss6klky6z3kqe5fczj</span><button class="btn" type="button" data-copy="bc1pgxwl0mj9y3k7znz7zaax9yystymk473g72mqnn66ss6klky6z3kqe5fczj">Copy</button><a class="btn" href="https://mempool.space/address/bc1pgxwl0mj9y3k7znz7zaax9yystymk473g72mqnn66ss6klky6z3kqe5fczj" target="_blank" rel="noopener">mempool</a></div>
+
+<h2>The second wave: $1.58M on Ethereum</h2>
+<div class="stack" style="margin-top:1rem">
+<p>An address on Arbitrum is also an address on Ethereum. <code>0xAC33</code> was first used on Ethereum on 25 November at 00:01 UTC. Between 03:16 and 03:31 it received 1,578,932 USDC from a single active wallet, in 24 transfers. The first was a $10 test.</p>
+<p>That payer, <code>0x3173</code>, signed every transfer itself, kept working normally afterwards and still holds funds. It has 392 transactions and moves hundreds of thousands of dollars a day between a handful of counterparties. That is how an OTC desk or broker paying a client looks. It is not how a drained victim looks. If it is a desk, it knows who it paid.</p>
+</div>
+<div class="addr"><span class="lab">Payer · 1,578,932 USDC to 0xAC33 in 24 transfers</span><span class="mono">0x31731505ffcb16c2025acd95c24323e5dd0daa2e</span><button class="btn" type="button" data-copy="0x31731505ffcb16c2025acd95c24323e5dd0daa2e">Copy</button><a class="btn" href="https://etherscan.io/address/0x31731505ffcb16c2025acd95c24323e5dd0daa2e" target="_blank" rel="noopener">Etherscan</a></div>
+<div class="stack" style="margin-top:1.2rem">
+<p>Four minutes later the money was split: 500,000 to <code>0x0982</code>, 500,000 to <code>0xc7c7</code> and 579,000 to <code>0x50a6</code>. Each passed it to one more fresh wallet, which swapped it to ETH through a PMM swap contract. The ETH came back to the same three wallets.</p>
+</div>
+<div class="addr eth"><span class="lab">Where it all sits now · 951.79 ETH, about $1.58M at the swap rate</span><span class="mono">0xB12B13A9636b78b497c0686a0Fc3B51D47576572</span><button class="btn" type="button" data-copy="0xB12B13A9636b78b497c0686a0Fc3B51D47576572">Copy</button><a class="btn" href="https://etherscan.io/address/0xB12B13A9636b78b497c0686a0Fc3B51D47576572" target="_blank" rel="noopener">Etherscan</a></div>
+
+<div class="pull"><p>16:46:59 UTC: the ETH sweep starts. 16:47:17 UTC: the Bitcoin sweep starts. Eighteen seconds apart.</p></div>
+<p style="margin-top:1rem">Both chains were cleaned up in the same minute. That ties the Ethereum money to the same operator as the Bitcoin. Together: 43.87 BTC and 951.79 ETH, about $4.17M.</p>
+
+<h2>Evidence</h2>
+<p style="margin-top:1rem">Six exhibits, in the order the money moved. The yellow frame marks what to look at. Click any screenshot to see it full size.</p>
+<div class="exhibits"><article class="ex"><header class="exhead"><span class="exl">Exhibit A</span><h3>The selling wallet is labelled “ansemconzimp”</h3></header><div class="exbody"><div class="eximgs"><button class="frame" type="button" data-full="ev-sol.png" aria-label="Open full size: Solscan account page for GV6UU with public name ansemconzimp on Pump.fun"><img src="ev-sol.png" width="1100" height="590" alt="Solscan account page for GV6UU with public name ansemconzimp on Pump.fun"><span class="hl" style="left:1.6%;top:38.5%;width:58%;height:5.6%"></span><span class="hl" style="left:34.3%;top:54.2%;width:29.5%;height:6.8%"></span></button></div><div class="exnote"><p>Solscan names GV6UU as the Pump.fun profile “ansemconzimp” and notes the tag came from Lookonchain.</p><p class="exkey">GV6UUmNxz2RpKxmNAPadYKb7uQpszwqQAu3qLJxVdC52</p><a class="btn" href="https://solscan.io/account/GV6UUmNxz2RpKxmNAPadYKb7uQpszwqQAu3qLJxVdC52" target="_blank" rel="noopener">Open on Solscan</a></div></div></article><article class="ex"><header class="exhead"><span class="exl">Exhibit B</span><h3>Every swap names a Bitcoin address</h3></header><div class="exbody"><div class="eximgs"><div class="decoded" role="img" aria-label="Decoded input data of transaction 0x3e089e01: function swap, token USDC, destination BTC, receiver bc1qhvzh, amount 200,000 USDC">
+<div class="dhead"><span>Arbitrum · tx 0x3e089e01…c696 · 24 Nov 17:49:52 UTC</span><span>to BridgersSwap</span></div>
+<div class="drow"><span class="dk">function</span><span class="dv">swap(address,string,string,uint256,uint256)</span></div>
+<div class="drow"><span class="dk">fromToken</span><span class="dv">0xaf88d065e77c8cC2239327C5EDb3A432268e5831 <em>USDC</em></span></div>
+<div class="drow"><span class="dk">toToken</span><span class="dv mark">BTC|fhqq6m|0.02|bridgers|0</span></div>
+<div class="drow"><span class="dk">destination</span><span class="dv mark">bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0</span></div>
+<div class="drow"><span class="dk">fromAmount</span><span class="dv">200000000000 <em>= 200,000 USDC</em></span></div>
+<div class="drow"><span class="dk">minReturn</span><span class="dv">331461500 <em>= 3.31 BTC</em></span></div>
+</div></div><div class="exnote"><p>The input data of each BridgersSwap call holds the destination as plain text. This is the first of the 14 swaps, decoded.</p><p class="exkey">200,000 USDC → BTC → bc1qhvzh…</p><a class="btn" href="https://arbiscan.io/tx/0x3e089e01d8edbcddf1e02bf305525d80fc1208441cc23211a554c70ee9bcc696" target="_blank" rel="noopener">Open on Arbiscan</a></div></div></article><article class="ex"><header class="exhead"><span class="exl">Exhibit C</span><h3>The exit address was live before the dump</h3></header><div class="exbody"><div class="eximgs"><button class="frame" type="button" data-full="ev-first.png" aria-label="Open full size: mempool.space transaction 05f2cefc with timestamp 2026-11-24 04:42:50 UTC"><img src="ev-first.png" width="1100" height="420" alt="mempool.space transaction 05f2cefc with timestamp 2026-11-24 04:42:50 UTC"><span class="hl" style="left:3.1%;top:42.8%;width:46%;height:11.8%"></span></button><button class="frame" type="button" data-full="ev-first-io.png" aria-label="Open full size: Outputs of transaction 05f2cefc, including 0.001 BTC to bc1qhvzh"><img src="ev-first-io.png" width="1070" height="177" alt="Outputs of transaction 05f2cefc, including 0.001 BTC to bc1qhvzh"><span class="hl" style="left:51%;top:30%;width:48%;height:18%"></span></button></div><div class="exnote"><p>The first coins reach bc1qhvzh at 04:42:50 UTC on 24 November: 0.001 BTC. The first $ANSEM sale comes at 08:57:09.</p><p class="exkey">04:42:50 UTC · 4h 14m before the first sale</p><a class="btn" href="https://mempool.space/tx/05f2cefce7a239f5e8ddbc880b1fbc9d328f584404a32252e97701facda68ce3" target="_blank" rel="noopener">Open on mempool.space</a></div></div></article><article class="ex"><header class="exhead"><span class="exl">Exhibit D</span><h3>The first exit is now empty</h3></header><div class="exbody"><div class="eximgs"><button class="frame" type="button" data-full="ev-hvzh.png" aria-label="Open full size: mempool.space address bc1qhvzh with confirmed balance 0 and total received 19.18 BTC"><img src="ev-hvzh.png" width="1100" height="365" alt="mempool.space address bc1qhvzh with confirmed balance 0 and total received 19.18 BTC"><span class="hl" style="left:3.1%;top:42.5%;width:45.3%;height:15%"></span><span class="hl" style="left:3.1%;top:68.5%;width:45.3%;height:15%"></span></button></div><div class="exnote"><p>bc1qhvzh received 19.18 BTC in total. Its balance today is zero.</p><p class="exkey">Received 19.18372088 BTC · balance 0</p><a class="btn" href="https://mempool.space/address/bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0" target="_blank" rel="noopener">Open on mempool.space</a></div></div></article><article class="ex"><header class="exhead"><span class="exl">Exhibit E</span><h3>All four addresses swept into one</h3></header><div class="exbody"><div class="eximgs"><button class="frame" type="button" data-full="ev-cons-io.png" aria-label="Open full size: Inputs from bc1qsayt and one output of 8.22 BTC to bc1pgxwl"><img src="ev-cons-io.png" width="1070" height="208" alt="Inputs from bc1qsayt and one output of 8.22 BTC to bc1pgxwl"><span class="hl" style="left:1.6%;top:9%;width:48.5%;height:47%"></span><span class="hl" style="left:50.8%;top:9%;width:48.6%;height:18%"></span></button></div><div class="exnote"><p>One of the five consolidation transactions on 25 November: bc1qsayt sends everything it holds to bc1pgxwl.</p><p class="exkey">bc1qsayt → bc1pgxwl · 8.22 BTC · 25 Nov 16:58:05 UTC</p><a class="btn" href="https://mempool.space/tx/3c3caa4d7ec999ae48024cdcf4953e87a6adb26d3a4c7ad3b55674d77c8e08ba" target="_blank" rel="noopener">Open on mempool.space</a></div></div></article><article class="ex"><header class="exhead"><span class="exl">Exhibit F</span><h3>Where it all sits now</h3></header><div class="exbody"><div class="eximgs"><button class="frame" type="button" data-full="ev-cons.png" aria-label="Open full size: mempool.space address bc1pgxwl with confirmed balance 43.87 BTC"><img src="ev-cons.png" width="1100" height="365" alt="mempool.space address bc1pgxwl with confirmed balance 43.87 BTC"><span class="hl" style="left:3.1%;top:42.5%;width:45.3%;height:21%"></span></button></div><div class="exnote"><p>bc1pgxwl holds 43.87 BTC in five unspent outputs, about $2.6M.</p><p class="exkey">43.86959562 BTC</p><a class="btn" href="https://mempool.space/address/bc1pgxwl0mj9y3k7znz7zaax9yystymk473g72mqnn66ss6klky6z3kqe5fczj" target="_blank" rel="noopener">Open on mempool.space</a></div></div></article></div>
+<p class="src" style="margin-top:.9rem">Screenshots taken 25 November 2026, about 17:35 UTC, with mempool.space set to UTC.</p>
+
+<h2>The first $543,837: cash, taken two hours early</h2>
+<div class="stack" style="margin-top:1rem">
+<p>Every report starts this story with the selling. The chain starts it earlier. At 06:46:32 UTC the "ansemconzimp" wallet sent out 515,278 USDC, and seven seconds later 404.67 SOL. Both went to a wallet that had never been used. The wallet's own key signed both transfers.</p>
+<p>The money then sat still for 66 minutes while the route was tested with pocket change: 0.39 SOL went in at one end and 27 USDC came out at <code>0xAC33</code>. At 07:52 a $1 test followed, then the full amount.</p>
+<p>The route was the same each time: a fresh Solana wallet, another fresh Solana wallet, a Relay bridge to a fresh Arbitrum wallet, and a signed USDC permit that let one relayer, <code>0xb711</code>, pull the money into <code>0xAC33</code> one second later. Five throwaway wallets on two chains to move one wallet's cash.</p>
+</div>
+<div class="addr sol"><span class="lab">Old wallet, created 21 Apr 2024 · first activity of the incident, 06:45:07</span><span class="mono">GYfEZvZT6psx61NyjStSxKnaFFPuF2GQtkHZkqUCxYcV</span><button class="btn" type="button" data-copy="GYfEZvZT6psx61NyjStSxKnaFFPuF2GQtkHZkqUCxYcV">Copy</button><a class="btn" href="https://solscan.io/account/GYfEZvZT6psx61NyjStSxKnaFFPuF2GQtkHZkqUCxYcV" target="_blank" rel="noopener">Solscan</a></div>
+<div class="addr sol"><span class="lab">Fresh wallet · received 515,278 USDC and 404.67 SOL from the selling wallet at 06:46</span><span class="mono">G1hBwB7KJ8CPG2XxujzM9WHS2zgrFQ94f3UUy8uyw96k</span><button class="btn" type="button" data-copy="G1hBwB7KJ8CPG2XxujzM9WHS2zgrFQ94f3UUy8uyw96k">Copy</button><a class="btn" href="https://solscan.io/account/G1hBwB7KJ8CPG2XxujzM9WHS2zgrFQ94f3UUy8uyw96k" target="_blank" rel="noopener">Solscan</a></div>
+<div class="addr sol"><span class="lab">Fresh wallet · bridged the 515,278 USDC via Relay at 07:54</span><span class="mono">DsykB6arKRni6yX52Ww8Dut9Hws5U8teUQS73ogGhCVQ</span><button class="btn" type="button" data-copy="DsykB6arKRni6yX52Ww8Dut9Hws5U8teUQS73ogGhCVQ">Copy</button><a class="btn" href="https://solscan.io/account/DsykB6arKRni6yX52Ww8Dut9Hws5U8teUQS73ogGhCVQ" target="_blank" rel="noopener">Solscan</a></div>
+<div class="addr sol"><span class="lab">Fresh wallet · bridged the 404.67 SOL via Relay at 07:54</span><span class="mono">55DVCPNTVuhob7WyKi84enKCTtgbe5xLyx98LkWwWVZa</span><button class="btn" type="button" data-copy="55DVCPNTVuhob7WyKi84enKCTtgbe5xLyx98LkWwWVZa">Copy</button><a class="btn" href="https://solscan.io/account/55DVCPNTVuhob7WyKi84enKCTtgbe5xLyx98LkWwWVZa" target="_blank" rel="noopener">Solscan</a></div>
+<div class="addr arb"><span class="lab">Fresh Arbitrum wallet · received 515,110 USDC, emptied by permit 14 seconds later</span><span class="mono">0x06ee679b907a654a9126caf511922f632f6e4b03</span><button class="btn" type="button" data-copy="0x06ee679b907a654a9126caf511922f632f6e4b03">Copy</button><a class="btn" href="https://arbiscan.io/address/0x06ee679b907a654a9126caf511922f632f6e4b03" target="_blank" rel="noopener">Arbiscan</a></div>
+<div class="addr arb"><span class="lab">Fresh Arbitrum wallet · received 28,694 USDC, emptied by permit</span><span class="mono">0xb8009d1da10b8fe53330cfb2cbc77f2de241f3ec</span><button class="btn" type="button" data-copy="0xb8009d1da10b8fe53330cfb2cbc77f2de241f3ec">Copy</button><a class="btn" href="https://arbiscan.io/address/0xb8009d1da10b8fe53330cfb2cbc77f2de241f3ec" target="_blank" rel="noopener">Arbiscan</a></div>
+<div class="addr "><span class="lab">Relayer and fee wallet · submitted the permits and pulled the funds into 0xAC33</span><span class="mono">0xb711a13cbaf741a882c720b4368a4ef26a4f1a62</span><button class="btn" type="button" data-copy="0xb711a13cbaf741a882c720b4368a4ef26a4f1a62">Copy</button><a class="btn" href="https://arbiscan.io/address/0xb711a13cbaf741a882c720b4368a4ef26a4f1a62" target="_blank" rel="noopener">Arbiscan</a></div>
+<h3 style="margin-top:2rem">The route ran through an app</h3>
+<div class="stack" style="margin-top:.8rem">
+<p>Relay keeps a public record of every bridge. For these transfers it shows an app fee paid to <code>0xb711</code>: 2% on the 0.39 SOL test, 0.5% on the 404.67 SOL and 0.01% on the 515,278 USDC. A fee scale like that belongs to a wallet or trading app, and <code>0xb711</code> is that app's fee wallet. The same address then acted as the relayer for the permits.</p>
+<p>The Solana side agrees. The fresh wallets did not pay their own network fees. One fee payer, <code>5zDAX7NB</code>, co-signed for them, and it co-signed for the old wallet <code>GYfEZvZT</code> as far back as May 2026. So this part of the operation was run from inside an app, using that app's sponsored transactions, its bridge and its relayer.</p>
+<p>That fits Bullpen's statement that legacy beta accounts were taken over. The old wallet dates from April 2024, the start of Bullpen's beta. It does not prove which app it was, because neither address carries a public label.</p>
+<p>The token sales were different. Their proceeds went straight from the selling wallet to <code>0xAC33</code> through Relay in blocks of 2,000 SOL, with no app fee.</p>
+</div>
+
+<h2>Two readings, same data</h2>
+<div class="split">
+  <section>
+    <h3>Fits a theft</h3>
+    <ul>
+      <li>Bullpen confirmed unauthorized transfers on 18-19 early beta accounts, Ansem's included.<span class="tag">Reported</span></li>
+      <li>The liquid cash was taken first, two hours before the token sales, and the route was tested with $27 and $1 before the large amounts.<span class="tag">Onchain</span></li>
+      <li>The early transfers ran through an app's sponsored transactions, bridge and relayer, as an account takeover inside that app would.<span class="tag">Onchain</span></li>
+      <li>Fresh wallets, split amounts and a fast swap into Bitcoin.<span class="tag">Onchain</span></li>
+      <li>A second Ansem-linked wallet holding about 49% of $ANSEM supply did not move.<span class="tag">Reported</span></li>
+    </ul>
+  </section>
+  <section>
+    <h3>Fits a staged sale</h3>
+    <ul>
+      <li>MLM says an old wallet he had tagged as Ansem's funded the receiver an hour before the selling.<span class="tag">Reported</span></li>
+      <li>The first $543,837 at the receiver was the selling wallet's own cash, sent by its own key.<span class="tag">Onchain</span></li>
+      <li>The Bitcoin exit was live more than four hours before the first sale.<span class="tag">Onchain</span></li>
+      <li>Ansem co-founded Bullpen, so its confirmation is not independent.<span class="tag">Reported</span></li>
+      <li>A day later an active wallet paid the same address $1.58M, starting with a $10 test. Payments like that usually go to a known counterparty.<span class="tag">Onchain</span></li>
+    </ul>
+  </section>
+</div>
+<p style="margin-top:1.2rem">The chain shows which key signed. It does not show whose hand was on it. A real theft and a staged one would leave this same trail.</p>
+
+<h2>Open questions</h2>
+<ol class="q">
+  <li>Whose wallet is <code>GYfEZvZT</code>, the April 2024 wallet where the trail begins?</li>
+  <li>Who is <code>0x3173</code>, and what did it pay $1.58M for?</li>
+  <li>Which app uses <code>0xb711</code> as its fee wallet and <code>5zDAX7NB</code> as its Solana fee payer? Its logs would show which account gave the orders.</li>
+  <li>Who sent the 04:42 deposits to <code>bc1qhvzh</code>?</li>
+  <li>Has anyone asked Bridgers to freeze or flag the swaps?</li>
+  <li>Where do the 43.87 BTC at <code>bc1pgxwl</code> and the 951.79 ETH at <code>0xB12B</code> go next?</li>
+</ol>
+<p style="margin-top:1rem">Ansem (<span class="mono">@blknoiz06</span>) and Bullpen are invited to respond. Any reply will be added here.</p>
+
+<h2>Full ledger</h2>
+<details>
+  <summary>Every transaction in this trace</summary>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Time (24 Nov unless noted)</th><th>Step</th><th class="r">Amount</th><th>Transaction</th></tr></thead>
+    <tbody>
+      <tr><td>06:46:31</td><td>Old wallet GYfEZvZT sends test SOL (Solana)</td><td class="r">0.40 SOL</td><td><a class="mono" href="https://solscan.io/tx/dCSUJnTiSYak8i72ReU5TCJLR2tRp6sfTGu4Y1YfAeWMZ6M4ch5mXStBRsgyMSyzxjKjMpVFpP2w55BUQtNd8P7" target="_blank" rel="noopener">dCSUJnTi…</a></td></tr>
+      <tr><td>06:46:32</td><td>Selling wallet sends its USDC to G1hBwB7K (Solana)</td><td class="r">515,278.64 USDC</td><td><a class="mono" href="https://solscan.io/tx/ghxzcDR5nkt1kcPH7WvwJGPCzUK7gHkP94qo7ZkKbQF2d8DUQRBApwaV213eyB3KtbRh2dgTB9iaQdFejo8pW2x" target="_blank" rel="noopener">ghxzcDR5…</a></td></tr>
+      <tr><td>06:46:39</td><td>Selling wallet sends its SOL to G1hBwB7K (Solana)</td><td class="r">404.67 SOL</td><td><a class="mono" href="https://solscan.io/tx/5y6KTGvUohg832WroYNLhN6Azr4VUiPoL8Cs55qcX6Q9qszDWXHdsTirtmkU8cHJ4JuncV3fts5wa54yEzEKBGiG" target="_blank" rel="noopener">5y6KTGvU…</a></td></tr>
+      <tr><td>06:57:20</td><td>Dry run bridged via Relay (Solana)</td><td class="r">0.388 SOL</td><td><a class="mono" href="https://solscan.io/tx/2ioWPavZxs3Uw6uJUqaaeVoCkCCyUc4UsKyMFkLxn5F75civi5ogJZ5zktiqXNXgSM9F9StobbZBSrVvf3NxH4zW" target="_blank" rel="noopener">2ioWPavZ…</a></td></tr>
+      <tr><td>07:53:46</td><td>G1hBwB7K to DsykB6ar (Solana)</td><td class="r">515,277.64 USDC</td><td><a class="mono" href="https://solscan.io/tx/2HfZhurqGVKnyB4PNaTEVJGj8cpuU5tVZ14T5ebwTUf2z4QoUKkuTbKYoH86Wrr4yLTbMHgD8fjdLLVm4C9J5QuP" target="_blank" rel="noopener">2HfZhurq…</a></td></tr>
+      <tr><td>07:54:01</td><td>DsykB6ar bridges via Relay to 0x06ee (Solana)</td><td class="r">515,277.64 USDC</td><td><a class="mono" href="https://solscan.io/tx/67gxQpWPQx7gr5yxRYnutFyNDCq7aRbhbDE3GKSCHjRFDWkTQZFhKm25cqA2Gy2HYh7hH9qZdiV7TyLc6N3j9TeW" target="_blank" rel="noopener">67gxQpWP…</a></td></tr>
+      <tr><td>07:54:58</td><td>55DVCPNT bridges via Relay to 0xb800 (Solana)</td><td class="r">404.62 SOL</td><td><a class="mono" href="https://solscan.io/tx/2Z71gKrc59ChAUKmRM6HYrJiPy2rJcJTfJVzpQ6Rc52nkoQXJuQtQZ396DpGURnaeFJLs7rGvv76TTrBWbmo25qP" target="_blank" rel="noopener">2Z71gKrc…</a></td></tr>
+      <tr><td>06:57:39</td><td>Permit pull from 0x7c61 (dry run)</td><td class="r">27.19 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xf254dfbd3319dd9a7994a455da17302d8ceeb2ac01f166d12da62da3095e0084" target="_blank" rel="noopener">0xf254dfbd…</a></td></tr>
+      <tr><td>07:54:15</td><td>Permit pull from 0x06ee</td><td class="r">515,110.15 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x954108e1825bc1959a1fbfc308edd40d98db2d4823ffee382a9830a82daffe71" target="_blank" rel="noopener">0x954108e1…</a></td></tr>
+      <tr><td>07:55:13</td><td>Permit pull from 0xb800</td><td class="r">28,694.22 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xcf3b4333fa95b768abae9685d2632b961a9c2c9fa8abe5ae59161e43db9ef45f" target="_blank" rel="noopener">0xcf3b4333…</a></td></tr>
+      <tr><td>08:57:09</td><td>First $ANSEM sale (Solana)</td><td class="r">-</td><td><a class="mono" href="https://solscan.io/tx/5GvWvsVNNEMu4ThXkmryMfheeMY27dUYkkuXgGVjEkcmv58wKTaeA4NTtDTvVBXbVz8zd5SLpqHQ613ezsTy5KYW" target="_blank" rel="noopener">5GvWvsVN…</a></td></tr>
+      <tr><td>10:08:23</td><td>Last $ANSEM sale (Solana)</td><td class="r">-</td><td><a class="mono" href="https://solscan.io/tx/Dg1iYiSufa7HfMhTj4CMyuf6qsFJ3Jz7LETro8MFjGfDw1FaT3B7W1G2E3QxDQoUeNWbkUyWwrz1aJ6zNFGUKDc" target="_blank" rel="noopener">Dg1iYiSu…</a></td></tr>
+      <tr><td>17:49:52</td><td>Route A swap 1 to BTC</td><td class="r">200,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x3e089e01d8edbcddf1e02bf305525d80fc1208441cc23211a554c70ee9bcc696" target="_blank" rel="noopener">0x3e089e01…</a></td></tr>
+      <tr><td>18:15:32</td><td>Route A swap 2 to BTC</td><td class="r">200,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x2d157e0ea664c166def8da0c7c51bf4ba38ad44764e189b31026aef73597453b" target="_blank" rel="noopener">0x2d157e0e…</a></td></tr>
+      <tr><td>18:16:14</td><td>Route A swap 3 to BTC</td><td class="r">200,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x42433437f8ba277d846387fd01cba428e491e2cdbd1a6013943ff0b8dc79aabc" target="_blank" rel="noopener">0x42433437…</a></td></tr>
+      <tr><td>18:17:58</td><td>Route A swap 4 to BTC</td><td class="r">200,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x088e487ab0b764875d1411d06e42aec86f97cb570828a3d84e4a0376341d1185" target="_blank" rel="noopener">0x088e487a…</a></td></tr>
+      <tr><td>18:19:45</td><td>To Route B wallet 1</td><td class="r">500,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x471629c7d8adddb4386c965fbb92d8103268dfd32425bbb37f4dec5089b8a9fc" target="_blank" rel="noopener">0x471629c7…</a></td></tr>
+      <tr><td>18:20:37</td><td>Wallet 1 swap to BTC</td><td class="r">200,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x088458ed8516d3b5d42b3171170e889c934eabcf56dd82b4d1b800e7f414c509" target="_blank" rel="noopener">0x088458ed…</a></td></tr>
+      <tr><td>18:21:05</td><td>Wallet 1 swap to BTC</td><td class="r">150,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x91e6e27fb55e83c1a41f8a569563d3449c8fc34d0faca0debccb090295dc4f08" target="_blank" rel="noopener">0x91e6e27f…</a></td></tr>
+      <tr><td>18:21:32</td><td>Wallet 1 swap to BTC</td><td class="r">149,999 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x25746cb82aaa8db2e1be3b76777b8d27ff6e1176ddbf5db83d9d13f66d10f077" target="_blank" rel="noopener">0x25746cb8…</a></td></tr>
+      <tr><td>18:38:10</td><td>To Route B wallet 2</td><td class="r">500,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x4fa29641f9097f43d85e2f23b74687e911051a9cf28815e3efef7cc2a303f4b2" target="_blank" rel="noopener">0x4fa29641…</a></td></tr>
+      <tr><td>18:44:04</td><td>To Route B wallet 3</td><td class="r">500,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xf17395819484bbec7d50e4076c840db7d82b5b92865dfdd9fc235b95cbac1610" target="_blank" rel="noopener">0xf1739581…</a></td></tr>
+      <tr><td>18:44:51</td><td>Route A swap 5 to BTC</td><td class="r">266,426 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x99ce86441c0c9737ba6fd02e4331840517ec40c012467752e82cc5ad18255975" target="_blank" rel="noopener">0x99ce8644…</a></td></tr>
+      <tr><td>18:45:57</td><td>Wallet 2 swap to BTC</td><td class="r">150,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0x9543b68055b3bba430090c6a6bab2a1f32d93d6a7249225ce50e79b31685f84d" target="_blank" rel="noopener">0x9543b680…</a></td></tr>
+      <tr><td>18:46:15</td><td>Wallet 2 swap to BTC</td><td class="r">150,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xd8e1a0e0b764c74d31c7c87a95ace799e2cf3c17bc4954912cc5fabcb0277e6f" target="_blank" rel="noopener">0xd8e1a0e0…</a></td></tr>
+      <tr><td>18:46:43</td><td>Wallet 2 swap to BTC</td><td class="r">199,998 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xf89283347b4019b2539a8aee51d6ce188e879ec02532fb1fa4a21ce2a194b2b8" target="_blank" rel="noopener">0xf8928334…</a></td></tr>
+      <tr><td>18:47:22</td><td>Wallet 3 swap to BTC</td><td class="r">150,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xb7a3b272cb9664803a4f22294bbfb6dd7f0322353655c00a8f7b2083ad117670" target="_blank" rel="noopener">0xb7a3b272…</a></td></tr>
+      <tr><td>18:47:45</td><td>Wallet 3 swap to BTC</td><td class="r">150,000 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xc1d03cf130319b87d8a6b596781f698de1231c2db56970e9b682bb01307f9fae" target="_blank" rel="noopener">0xc1d03cf1…</a></td></tr>
+      <tr><td>18:48:10</td><td>Wallet 3 swap to BTC</td><td class="r">199,998 USDC</td><td><a class="mono" href="https://arbiscan.io/tx/0xcb348546ddbf40d1125c850808fc51f11ce98334496140816345e45e68af3a02" target="_blank" rel="noopener">0xcb348546…</a></td></tr>
+      <tr><td>19:19:39</td><td>BTC payout to bc1qhvzh</td><td class="r">6.586845 BTC</td><td><a class="mono" href="https://mempool.space/tx/2e4e72c4d562c297484932c5496fa3cdb4d5c3b4bc770f2a3f1f5c4c2f117bec" target="_blank" rel="noopener">2e4e72c4…</a></td></tr>
+      <tr><td>20:58:41</td><td>BTC payout to all four</td><td class="r">35.65 BTC</td><td><a class="mono" href="https://mempool.space/tx/278e6410a2fb5717371d6b9639d44f263ea20ea57f7c83dedf643f7f30fbe723" target="_blank" rel="noopener">278e6410…</a></td></tr>
+      <tr><td>25 Nov 16:47:17</td><td>bc1qhvzh to bc1pgxwl, plus change</td><td class="r">8.217 BTC</td><td><a class="mono" href="https://mempool.space/tx/5d5145899b6ed92083318165b901018e73882012de073170684adcfbcd2db0e4" target="_blank" rel="noopener">5d514589…</a></td></tr>
+      <tr><td>25 Nov 16:58:05</td><td>bc1qhvzh and change to bc1pgxwl</td><td class="r">10.967 BTC</td><td><a class="mono" href="https://mempool.space/tx/23817d630503d05c00f78831c6461c722b49b13bd7b5eec5ea032d651eaaa6d8" target="_blank" rel="noopener">23817d63…</a></td></tr>
+      <tr><td>25 Nov 16:58:05</td><td>bc1qsayt to bc1pgxwl</td><td class="r">8.222 BTC</td><td><a class="mono" href="https://mempool.space/tx/3c3caa4d7ec999ae48024cdcf4953e87a6adb26d3a4c7ad3b55674d77c8e08ba" target="_blank" rel="noopener">3c3caa4d…</a></td></tr>
+      <tr><td>25 Nov 16:58:05</td><td>bc1qr3tt to bc1pgxwl</td><td class="r">8.225 BTC</td><td><a class="mono" href="https://mempool.space/tx/67f058d27063bb6b1fcb6ffd56e7b0ce2525391da280e653024b98096fce1486" target="_blank" rel="noopener">67f058d2…</a></td></tr>
+      <tr><td>25 Nov 17:11:54</td><td>bc1qn9qs to bc1pgxwl</td><td class="r">8.240 BTC</td><td><a class="mono" href="https://mempool.space/tx/b97eaa496fde4b1a597cb473cdee784851ee5aed94914f12d23a86f3527897d4" target="_blank" rel="noopener">b97eaa49…</a></td></tr>
+      <tr><td>25 Nov 03:16:59</td><td>Ethereum: test from 0x3173 to 0xAC33</td><td class="r">10 USDC</td><td><a class="mono" href="https://etherscan.io/tx/0x542a9aa5aa81390b38ce630038370ea261cdd1fca207ddb753c01ac7ac8f3c2c" target="_blank" rel="noopener">0x542a9aa5…</a></td></tr>
+      <tr><td>25 Nov 03:18:47</td><td>Ethereum: largest of 24 payments</td><td class="r">414,001 USDC</td><td><a class="mono" href="https://etherscan.io/tx/0x25e4c2a5086a6aef94046b52c1038977922aa4eedf3b3e939cda2864842aa2e3" target="_blank" rel="noopener">0x25e4c2a5…</a></td></tr>
+      <tr><td>25 Nov 03:35:23</td><td>0xAC33 to 0x0982</td><td class="r">500,000 USDC</td><td><a class="mono" href="https://etherscan.io/tx/0x83c2f6394a692a896eee2c996f36e18481bd0086454742a3ff7c1a7f347f0c4d" target="_blank" rel="noopener">0x83c2f639…</a></td></tr>
+      <tr><td>25 Nov 03:38:35</td><td>0xAC33 to 0xc7c7</td><td class="r">500,000 USDC</td><td><a class="mono" href="https://etherscan.io/tx/0xe0d41feed7685974e04d0bbf2ababefb6146064ceec084e02d86b8053baaf33f" target="_blank" rel="noopener">0xe0d41fee…</a></td></tr>
+      <tr><td>25 Nov 03:40:47</td><td>0xAC33 to 0x50a6</td><td class="r">579,000 USDC</td><td><a class="mono" href="https://etherscan.io/tx/0x463532581d2893e321cf25722752719f4c9dcab79d2dda53b0cabe6a4229a057" target="_blank" rel="noopener">0x46353258…</a></td></tr>
+      <tr><td>25 Nov 05:14:59</td><td>PMM swap, USDC to ETH (first of five)</td><td class="r">120.22 ETH</td><td><a class="mono" href="https://etherscan.io/tx/0xd28e634cdbcdd5b9a0e0a51d58d15ceadae17d4c247a73cc1cd82c7b2bcc239f" target="_blank" rel="noopener">0xd28e634c…</a></td></tr>
+      <tr><td>25 Nov 16:46:59</td><td>ETH sweep into 0xB12B begins</td><td class="r">0.50 ETH</td><td><a class="mono" href="https://etherscan.io/tx/0xf7360063725c331e59fab65962f2fbfe705844b762aff1a0eefd2a71ef3143ca" target="_blank" rel="noopener">0xf7360063…</a></td></tr>
+      <tr><td>25 Nov 16:47:47</td><td>0x7CeE to 0xB12B</td><td class="r">300.90 ETH</td><td><a class="mono" href="https://etherscan.io/tx/0x7b184cfdcafae80366409651f80a48dfc24d995883e9e131fd043ed558b9717e" target="_blank" rel="noopener">0x7b184cfd…</a></td></tr>
+      <tr><td>25 Nov 16:48:23</td><td>0xEc45 to 0xB12B</td><td class="r">301.02 ETH</td><td><a class="mono" href="https://etherscan.io/tx/0x52d9d2d3fa58343a1985c3375d74625574fc082d0f793966621ecc75c0551705" target="_blank" rel="noopener">0x52d9d2d3…</a></td></tr>
+      <tr><td>25 Nov 16:48:59</td><td>0x56d3 to 0xB12B</td><td class="r">349.38 ETH</td><td><a class="mono" href="https://etherscan.io/tx/0x7faa1f9971a4bee945a49c74a3a3e520319e50587ea37ce75cbc0549c6daa773" target="_blank" rel="noopener">0x7faa1f99…</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+</details>
+
+<h2>Method and sources</h2>
+<ul class="src" style="margin-top:1rem;padding-left:1.1rem">
+  <li>Amounts and times were read directly from the chains: Arbitrum (public RPC, USDC transfer logs and transaction input), Solana (public RPC, token balance changes of the selling wallet) and Bitcoin (mempool.space).</li>
+  <li>The "877 sells across 124 tokens" figure is Arkham's and was not recounted here.</li>
+  <li>Bridge origins and app fees come from Relay's public request records. Solana transfers were read from the chain.</li>
+  <li>Bullpen has said a single account supplied 99.8% of the stolen funds, as reported by The Crypto Times and others on 25 November.</li>
+  <li>Ethereum amounts were read from USDC, USDT and WETH transfer logs over public RPC. Internal ETH transfers and wallet activity counts come from Blockscout.</li>
+  <li>Ansem's post: <a href="https://x.com/blknoiz06/status/2125182437063790806" target="_blank" rel="noopener">x.com/blknoiz06</a>. Lookonchain posts at <a href="https://x.com/lookonchain/status/2125162405110087821" target="_blank" rel="noopener">09:39</a>, <a href="https://x.com/lookonchain/status/2125166373362102312" target="_blank" rel="noopener">09:55</a> and <a href="https://x.com/lookonchain/status/2125229971132330174" target="_blank" rel="noopener">14:08</a>.</li>
+  <li>Bullpen's statement and MLM's quotes: <a href="https://decrypt.co/383889/ansem-meme-coin-crashes-wallet-drain-bullpen-security-breach" target="_blank" rel="noopener">Decrypt</a>. Bridgers route first reported by <a href="https://www.bankless.com/read/news/ansem-blames-bullpen-breach-for-2-57m-wallet-drain" target="_blank" rel="noopener">Bankless</a>.</li>
+  <li>Relay solver label for <code>0xf70d…3dbef</code>: <a href="https://etherscan.io/address/0xf70da97812cb96acdf810712aa562db8dfa3dbef" target="_blank" rel="noopener">Etherscan</a>.</li>
+</ul>
+
+<footer>This is a trace of public blockchain data, not an accusation. Wallet ownership beyond public labels is not established. Both end balances were last checked on 26 November 2026 (43.87 BTC and 951.79 ETH, unmoved) and may have changed since.</footer>
+</main>
+<dialog class="lb" id="lb"><img id="lbimg" alt=""><p>Click anywhere or press Escape to close.</p></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+(function(){
+  var svgEl = document.getElementById('bubbles');
+  if (!svgEl) return;
+  if (!window.d3) {
+    svgEl.innerHTML = '<text x="550" y="300" text-anchor="middle" fill="#8a95ad" font-size="16">The map needs d3, which did not load. The tables below hold the same data.</text>';
+    return;
+  }
+  var C = {
+    sell:{name:'Selling wallet (Solana)', col:'#b394ff'},
+    pre:{name:'Throwaway transit wallets', col:'#4fd1c5'},
+    old:{name:'Old wallet (April 2024)', col:'#e8d44d'},
+    coll:{name:'App relayer and fee wallet', col:'#ff7a93'},
+    exit:{name:'Exit cluster (shared 7702 delegate)', col:'#5b9cff'},
+    svc:{name:'Swap service', col:'#8b93a7'},
+    btc:{name:'Bitcoin, one owner', col:'#f5a623'},
+    payer:{name:'Payer (unidentified)', col:'#c3cad8'},
+    eth:{name:'Ethereum, one owner', col:'#8fa0ff'}
+  };
+  var SOLX='https://solscan.io/account/', ETH='https://etherscan.io/address/', ARB='https://arbiscan.io/address/', BTC='https://mempool.space/address/', SOL='https://solscan.io/account/';
+  var N = [
+    {id:'sell', c:'sell', x:150, y:95, usd:2565768, short:'GV6UU', full:'GV6UUmNxz2RpKxmNAPadYKb7uQpszwqQAu3qLJxVdC52', url:SOL, role:'"ansemconzimp" on Pump.fun. Its cash left at 06:46 UTC. It sold 87.49M $ANSEM from 08:57 to 10:08 UTC, 24 Nov.', amt:'2,021,931 USDC of sale proceeds + 543,837 of cash'},
+    {id:'tw1', c:'pre', x:55, y:235, usd:543837, short:'G1hBw', full:'G1hBwB7KJ8CPG2XxujzM9WHS2zgrFQ94f3UUy8uyw96k', url:SOLX, role:'Fresh Solana wallet. Received the selling wallet\'s cash at 06:46:32 and held it for 66 minutes.', amt:'515,278 USDC + 404.67 SOL'},
+    {id:'dsyk', c:'pre', x:40, y:335, usd:515278, short:'Dsyk', full:'DsykB6arKRni6yX52Ww8Dut9Hws5U8teUQS73ogGhCVQ', url:SOLX, role:'Fresh Solana wallet. Bridged the USDC via Relay at 07:54:01, app fee to 0xb711.', amt:'515,278 USDC'},
+    {id:'dvc', c:'pre', x:135, y:335, usd:28694, short:'55DVC', full:'55DVCPNTVuhob7WyKi84enKCTtgbe5xLyx98LkWwWVZa', url:SOLX, role:'Fresh Solana wallet. Bridged the SOL via Relay at 07:54:58, app fee to 0xb711.', amt:'404.62 SOL'},
+    {id:'s1', c:'pre', x:40, y:445, usd:515111, short:'0x06ee', full:'0x06ee679b907a654a9126caf511922f632f6e4b03', url:ARB, role:'Fresh Arbitrum wallet. Never sent a tx. Emptied by signed permit 14 seconds after the bridge paid out.', amt:'515,111 USDC'},
+    {id:'s2', c:'pre', x:135, y:445, usd:28698, short:'0xb800', full:'0xb8009d1da10b8fe53330cfb2cbc77f2de241f3ec', url:ARB, role:'Fresh Arbitrum wallet. Never sent a tx. Emptied by signed permit.', amt:'28,698 USDC'},
+    {id:'coll', c:'coll', x:225, y:395, usd:543836, short:'0xb711', full:'0xb711a13cbaf741a882c720b4368a4ef26a4f1a62', url:ARB, role:'Relay app-fee recipient for these bridges, and the relayer that submitted the permits. An app\'s fee wallet. Not publicly labelled.', amt:'543,836 USDC pulled into 0xAC33'},
+    {id:'old', c:'old', x:120, y:575, usd:60000, short:'GYfEZ', full:'GYfEZvZT6psx61NyjStSxKnaFFPuF2GQtkHZkqUCxYcV', url:SOLX, role:'Created 21 Apr 2024, silent since June 2026. Woke at 06:45:07 UTC on 24 Nov and funded the dry run. Owner not established.', amt:'0.40 SOL test'},
+    {id:'s3', c:'pre', x:245, y:540, usd:27, short:'0x7c61', full:'0x7c612de1ed39e75400f2b659c668084761e05e20', url:ARB, role:'Fresh Arbitrum wallet for the dry run. 27 USDC arrived at 0xAC33 at 06:57:39.', amt:'27 USDC'},
+    {id:'ac33', c:'exit', x:340, y:300, usd:2566427, short:'0xAC33', full:'0xAC33748aAd09CEA8E50484Cc0Fa168dc23531B4d', url:ARB, role:'Arbitrum receiver. First used 06:57 UTC 24 Nov. Emptied 17:49-18:48 UTC.', amt:'2,566,427 USDC peak'},
+    {id:'w1', c:'exit', x:530, y:170, usd:500000, short:'0x0bf5', full:'0x0bf5c56c12d52379c00f525f73b33e3ada84b105', url:ARB, role:'Fresh wallet. Received 500K, forwarded in 3 swaps within 2 min.', amt:'500,000 USDC'},
+    {id:'w2', c:'exit', x:530, y:300, usd:500000, short:'0x2711', full:'0x271114cb6226c360ea9db38524c1ec1664d4c9a7', url:ARB, role:'Fresh wallet. Received 500K, forwarded in 3 swaps within 9 min.', amt:'500,000 USDC'},
+    {id:'w3', c:'exit', x:530, y:430, usd:500000, short:'0x4e9e', full:'0x4e9e3bbd85962cdc61d95237cdf113d22c008ba8', url:ARB, role:'Fresh wallet. Received 500K, forwarded in 3 swaps within 4 min.', amt:'500,000 USDC'},
+    {id:'brg', c:'svc', x:700, y:300, usd:2566421, short:'Bridgers', full:'0xc1d13492285eb664951e201bf7c80c7c6318a1b5', url:ARB, role:'BridgersSwap contract. 14 swaps, USDC to BTC. Destinations decoded from input data.', amt:'2,566,421 USDC in'},
+    {id:'b0', c:'btc', x:870, y:140, usd:1166000, short:'bc1qhvzh', full:'bc1qhvzh8ywv7h0ca5jqta959sa0dd3fj7c9jghvv0', url:BTC, role:'Route A exit. First deposit 04:42:50 UTC 24 Nov, four hours before the first sale. Emptied 25 Nov.', amt:'19.18 BTC received'},
+    {id:'b1', c:'btc', x:870, y:290, usd:500000, short:'bc1qsayt', full:'bc1qsayt892n8c3jrkeewcg8j8aynltxttnctxnm0m', url:BTC, role:'Payout for wallet 0x0bf5. Emptied 25 Nov.', amt:'8.22 BTC'},
+    {id:'b2', c:'btc', x:870, y:400, usd:500000, short:'bc1qr3tt', full:'bc1qr3ttqnr0e50t6vqcl5n4l5azx0866ppql2fxyh', url:BTC, role:'Payout for wallet 0x2711. Emptied 25 Nov.', amt:'8.22 BTC'},
+    {id:'b3', c:'btc', x:870, y:510, usd:501000, short:'bc1qn9qs', full:'bc1qn9qsy8auwh6slgmftpmc4qmuhz9zk58a0x7c27', url:BTC, role:'Payout for wallet 0x4e9e. Emptied 25 Nov.', amt:'8.24 BTC'},
+    {id:'bc', c:'btc', x:960, y:60, usd:164000, short:'bc1qd6kd', full:'bc1qd6kdcvyv8fea7ulyq5gt0v0jqqldk4kfx2qd9e', url:BTC, role:'Change address, used for eleven minutes on 25 Nov.', amt:'2.76 BTC'},
+    {id:'cons', c:'btc', x:1030, y:310, usd:2606205, short:'bc1pgxwl', full:'bc1pgxwl0mj9y3k7znz7zaax9yystymk473g72mqnn66ss6klky6z3kqe5fczj', url:BTC, role:'Consolidation, 16:47-17:11 UTC 25 Nov. Holds everything.', amt:'43.87 BTC, about $2.6M'},
+    {id:'pay', c:'payer', x:120, y:720, usd:1578932, short:'0x3173', full:'0x31731505ffcb16c2025acd95c24323e5dd0daa2e', url:ETH, role:'Active wallet, 392 txs. Paid 0xAC33 on Ethereum in 24 transfers, 03:16-03:31 UTC 25 Nov, starting with a $10 test.', amt:'1,578,932 USDC paid'},
+    {id:'ace', c:'exit', x:330, y:720, usd:1579004, short:'0xAC33 eth', full:'0xAC33748aAd09CEA8E50484Cc0Fa168dc23531B4d', url:ETH, role:'The same address as the Arbitrum receiver, used on Ethereum from 25 Nov 00:01 UTC.', amt:'1,579,000 USDC out in three parts'},
+    {id:'h1', c:'eth', x:500, y:615, usd:500000, short:'0x0982', full:'0x09827984A606c526e75f524F039D4fA47f23640b', url:ETH, role:'First hop, 500K USDC. Its 0.50 ETH sweep at 16:46:59 starts the ETH consolidation.', amt:'500,000 USDC'},
+    {id:'h2', c:'eth', x:500, y:720, usd:500000, short:'0xc7c7', full:'0xc7c7f163067c121cbdea57f0892566043b16b9f5', url:ETH, role:'First hop, 500K USDC.', amt:'500,000 USDC'},
+    {id:'h3', c:'eth', x:500, y:825, usd:579000, short:'0x50a6', full:'0x50a67ff1b36cbba4cab74da5eb48951443d9bb4b', url:ETH, role:'First hop, 579K USDC. Also sent 1 ETH of gas to 0x0982.', amt:'579,000 USDC'},
+    {id:'g1', c:'eth', x:640, y:615, usd:500000, short:'0x7CeE', full:'0x7CeE473D95E0f82398445771fFc3a0463a3B6fE2', url:ETH, role:'Second hop. Swapped 500K USDC to 300.4 ETH via PMM.', amt:'300.90 ETH to 0xB12B'},
+    {id:'g2', c:'eth', x:640, y:720, usd:500000, short:'0xEc45', full:'0xEc4539152e0420805e71F06CA51f88793dC8cf20', url:ETH, role:'Second hop. Swapped 500K USDC to 300.0 ETH via PMM.', amt:'301.02 ETH to 0xB12B'},
+    {id:'g3', c:'eth', x:640, y:825, usd:579000, short:'0x56d3', full:'0x56d3CeAb619Ed4f3CBE9A28061fa3eb14B1A375b', url:ETH, role:'Second hop. Swapped 579K USDC to ETH.', amt:'349.38 ETH to 0xB12B'},
+    {id:'pmm', c:'svc', x:790, y:690, usd:1300000, short:'PMM', full:'0x8d90113a1e286a5ab3e496fbd1853f265e5913c6', url:ETH, role:'Verified swap contract "PMM". USDC in, ETH out to the sender.', amt:'USDC to ETH, 05:14-05:33 UTC'},
+    {id:'eend', c:'eth', x:990, y:740, usd:1578637, short:'0xB12B', full:'0xB12B13A9636b78b497c0686a0Fc3B51D47576572', url:ETH, role:'ETH consolidation, 16:46:59-16:48:59 UTC 25 Nov. Same minute as the BTC sweep.', amt:'951.79 ETH, about $1.58M'}
+  ];
+  var L = [
+    ['sell','ac33',2021931,'token sales'], ['sell','tw1',543837,'06:46 cash',null,0.62], ['tw1','dsyk',515278], ['tw1','dvc',28694],
+    ['dsyk','s1',515278], ['dvc','s2',28694], ['s1','coll',515111], ['s2','coll',28698], ['old','s3',3000,'dry run'], ['s3','coll',27], ['coll','ac33',543836],
+    ['ac33','brg',1066426,'Route A'], ['ac33','w1',500000], ['ac33','w2',500000], ['ac33','w3',500000],
+    ['w1','brg',499999], ['w2','brg',499998], ['w3','brg',499998],
+    ['brg','b0',1066426], ['brg','b1',499999], ['brg','b2',499998], ['brg','b3',499998],
+    ['b0','bc',164000], ['bc','cons',164000], ['b0','cons',1000000], ['b1','cons',500000], ['b2','cons',500000], ['b3','cons',500000],
+    ['pay','ace',1578932,'$1.58M'], ['ac33','ace',300000,'same address','dash'],
+    ['ace','h1',500000], ['ace','h2',500000], ['ace','h3',579000],
+    ['h1','g1',500000], ['h2','g2',500000], ['h3','g3',579000],
+    ['g1','pmm',500000], ['g2','pmm',500000], ['g3','pmm',300000],
+    ['g1','eend',500000], ['g2','eend',500000], ['g3','eend',579000], ['h1','eend',1000],
+    ['eend','cons',300000,'same minute','dash']
+  ];
+  var byId = {}; N.forEach(function(n){ byId[n.id]=n; n.r = 7 + Math.sqrt(n.usd)/Math.sqrt(2606205)*44; n.tx=n.x; n.ty=n.y; });
+  var links = L.map(function(l){ return {source:byId[l[0]], target:byId[l[1]], v:l[2], label:l[3], dash:l[4], at:l[5]}; });
+
+  var svg = d3.select(svgEl);
+  var defs = svg.append('defs');
+  Object.keys(C).forEach(function(k){
+    var g = defs.append('radialGradient').attr('id','g-'+k).attr('cx','35%').attr('cy','30%').attr('r','75%');
+    g.append('stop').attr('offset','0%').attr('stop-color',C[k].col).attr('stop-opacity',0.88);
+    g.append('stop').attr('offset','100%').attr('stop-color',C[k].col).attr('stop-opacity',0.78);
+  });
+  // faint grid like an analysis canvas
+  var grid = svg.append('g').attr('stroke','#18203a').attr('stroke-width',1);
+  for (var gx=0; gx<=1100; gx+=50) grid.append('line').attr('x1',gx).attr('x2',gx).attr('y1',0).attr('y2',880);
+  for (var gy=0; gy<=880; gy+=50) grid.append('line').attr('y1',gy).attr('y2',gy).attr('x1',0).attr('x2',1100);
+
+  var sim = d3.forceSimulation(N)
+    .force('x', d3.forceX(function(d){return d.tx;}).strength(0.5))
+    .force('y', d3.forceY(function(d){return d.ty;}).strength(0.5))
+    .force('collide', d3.forceCollide(function(d){return d.r+6;}).iterations(3))
+    .stop();
+  for (var i=0;i<300;i++) sim.tick();
+  N.forEach(function(d){ d.x=Math.max(d.r+4,Math.min(1100-d.r-4,d.x)); d.y=Math.max(d.r+4,Math.min(880-d.r-18,d.y)); });
+
+  var lw = d3.scaleSqrt().domain([0,2566427]).range([0.8,9]);
+  var linkSel = svg.append('g').selectAll('line').data(links).join('line')
+    .attr('stroke', function(d){ return d.dash ? '#e6ebf5' : C[d.source.c].col; }).attr('stroke-opacity',0.38).attr('stroke-dasharray', function(d){ return d.dash ? '6 6' : null; })
+    .attr('stroke-width', function(d){ return lw(d.v); }).attr('stroke-linecap','round');
+  var lblSel = svg.append('g').selectAll('text').data(links.filter(function(l){return l.label;})).join('text')
+    .attr('font-size',11).attr('fill','#c9d1e4').attr('text-anchor','middle').text(function(d){return d.label;});
+
+  var tip = document.getElementById('tip'), fig = svgEl.closest('figure');
+  var nodeSel = svg.append('g').selectAll('g').data(N).join('g').attr('class','node')
+    .attr('tabindex',0).attr('role','link').attr('aria-label', function(d){ return d.short+', '+C[d.c].name+', '+d.amt+'. Opens the explorer.'; });
+  nodeSel.append('circle').attr('r', function(d){return d.r;})
+    .attr('fill', function(d){return 'url(#g-'+d.c+')';}).attr('stroke', function(d){return C[d.c].col;}).attr('stroke-width',1.5);
+  nodeSel.append('text').attr('text-anchor','middle').attr('font-size', function(d){return d.r>30?13:11;})
+    .attr('fill', function(d){ return d.r>30 ? '#0b1020' : '#dfe5f2'; })
+    .attr('font-weight', function(d){ return d.r>30 ? 600 : 400; })
+    .attr('dy', function(d){ return d.r>30 ? 4 : d.r+14; })
+    .text(function(d){return d.short;});
+
+  function place(){
+    linkSel.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;})
+           .attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});
+    lblSel.attr('x',function(d){var a=d.at||0.35;return d.source.x+(d.target.x-d.source.x)*a;}).attr('y',function(d){var a=d.at||0.35;return d.source.y+(d.target.y-d.source.y)*a-8;});
+    nodeSel.attr('transform',function(d){return 'translate('+d.x+','+d.y+')';});
+  }
+  place();
+
+  function show(ev,d){
+    tip.innerHTML = '<b>'+C[d.c].name+'</b><code>'+d.full+'</code><br>'+d.amt+'<br><span style="color:#8a95ad">'+d.role+'</span>';
+    tip.hidden = false;
+    var fr = fig.getBoundingClientRect(), x, y;
+    if (ev && ev.clientX) { x = ev.clientX - fr.left + 14; y = ev.clientY - fr.top + 14; }
+    else { var br = this && this.getBoundingClientRect ? this.getBoundingClientRect() : fr; x = br.right - fr.left + 8; y = br.top - fr.top; }
+    x = Math.min(x, fr.width - tip.offsetWidth - 8); tip.style.left = Math.max(8,x)+'px'; tip.style.top = y+'px';
+  }
+  function hide(){ tip.hidden = true; }
+  var dragged = false;
+  nodeSel.on('mouseenter', function(ev,d){ show.call(this,ev,d); linkSel.attr('stroke-opacity', function(l){ return (l.source===d||l.target===d)?0.85:0.15; }); })
+    .on('mousemove', function(ev,d){ show.call(this,ev,d); })
+    .on('mouseleave', function(){ hide(); linkSel.attr('stroke-opacity',0.38); })
+    .on('focus', function(ev,d){ show.call(this,null,d); })
+    .on('blur', hide)
+    .on('keydown', function(ev,d){ if (ev.key==='Enter') window.open(d.url+d.full,'_blank','noopener'); })
+    .on('click', function(ev,d){ if (dragged) { dragged=false; return; } var a=document.createElement('a'); a.href=d.url+d.full; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove(); });
+  nodeSel.call(d3.drag()
+    .on('start', function(){ dragged=false; hide(); })
+    .on('drag', function(ev,d){ dragged=true; d.x=Math.max(d.r,Math.min(1100-d.r,ev.x)); d.y=Math.max(d.r,Math.min(880-d.r,ev.y)); place(); }));
+
+  var lg = document.getElementById('legend');
+  Object.keys(C).forEach(function(k){ var s=document.createElement('span'); s.innerHTML='<i style="background:'+C[k].col+'"></i>'+C[k].name; lg.appendChild(s); });
+})();
+
+</script>
+<script>
+
+(function(){
+  var dlg=document.getElementById('lb'), im=document.getElementById('lbimg');
+  if(!dlg) return;
+  document.querySelectorAll('.frame').forEach(function(f){
+    f.addEventListener('click',function(){
+      im.src=f.getAttribute('data-full'); im.alt=f.querySelector('img').alt;
+      if (dlg.showModal) { try { dlg.showModal(); } catch(e) { window.open(im.src,'_blank'); } } else { window.open(im.src,'_blank'); }
+    });
+  });
+  dlg.addEventListener('click',function(){ dlg.close(); });
+})();
+
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var v=b.getAttribute('data-copy');
+    var done=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1400)};
+    var fallback=function(){
+      var s=b.parentNode.querySelector('.mono');
+      try{var r=document.createRange();r.selectNodeContents(s);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);b.textContent='Selected'}catch(e){}
+    };
+    try{navigator.clipboard.writeText(v).then(done,fallback)}catch(e){fallback()}
+  });
+});
+</script>
+
+<script>document.querySelectorAll('.addr .mono').forEach(function(e){if(e.textContent.trim().length>56)e.classList.add('long')})</script>
+</body>
+</html>

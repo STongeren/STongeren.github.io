@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stefano van Tongeren | 0xsurgeon</title>
+  <meta name="description" content="Stefano van Tongeren. Security student, SOC and detection engineering, crypto security. A desk, a CRT, and everything I build." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="theme-color" content="#1f6fd8" />
+  <meta property="og:title" content="Stefano van Tongeren - SOC and detection portfolio" />
+  <meta property="og:description" content="Cyber Security student looking for a SOC or detection internship, February to July 2027. My portfolio is a world you can walk through." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://stongeren.github.io/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="A zeppelin over a glass city carrying a banner: Looking for an internship, cyber security, SOC, February to July 2027" />
+  <meta property="og:url" content="https://stongeren.github.io/" />
+  <link rel="canonical" href="https://stongeren.github.io/" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Person", "name": "Stefano van Tongeren", "alternateName": "0xsurgeon", "url": "https://stongeren.github.io/", "image": "https://stongeren.github.io/os/bots.jpg", "jobTitle": "Cyber Security student", "description": "Cyber Security student at the HvA looking for a graduation internship in a SOC or detection team, February to July 2027.", "affiliation": {"@type": "CollegeOrUniversity", "name": "Amsterdam University of Applied Sciences (HvA)"}, "address": {"@type": "PostalAddress", "addressLocality": "The Hague", "addressCountry": "NL"}, "knowsAbout": ["Security operations", "Detection engineering", "SIEM", "KQL", "SPL", "Wazuh", "MITRE ATT&CK", "Application security", "Crypto exchange security"], "award": "1st place, Splunk Boss of the SOC (BOTS) v10, 2026", "sameAs": ["https://linkedin.com/in/stongeren", "https://github.com/STongeren", "https://tryhackme.com/p/z5", "https://instagram.com/0xsurgeon"]}</script>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://stongeren.github.io/og.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&display=swap" rel="stylesheet" />
+  <script>
+    // no WebGL (old or locked-down machine): go straight to the quick view
+    try { var gc = document.createElement('canvas'); if (!(gc.getContext('webgl2') || gc.getContext('webgl'))) location.replace('cv/?why=nogl'); } catch (e) { location.replace('cv/?why=nogl'); }
+    try { var q = new URLSearchParams(location.search).get('theme'), t = q || localStorage.getItem('0xsurgeon:theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'); if (t === 'night') document.documentElement.classList.add('night'); } catch (e) {}
+  </script>
+  <script type="module" crossorigin src="/assets/main-BmPEQvF7.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/content-DhPX4BgE.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-ITlFdXzs.css">
+</head>
+<body>
+  <!-- the 3D world is a canvas: this is the same page in words, for search engines and screen readers -->
+  <div class="sr-only">
+    <h1>Stefano van Tongeren, Cyber Security student (SOC and detection)</h1>
+    <p>Cyber Security student at the Amsterdam University of Applied Sciences (HvA), looking for a graduation internship in a SOC or detection team, February to July 2027, in the Randstad or remote. 1st place at Splunk Boss of the SOC v10. This portfolio is a 3D world you can walk through; the same content is on one page in the <a href="cv/">quick view</a>.</p>
+  </div>
+  <div id="css3d"></div>
+  <canvas id="gl"></canvas>
+  <div id="os-overlay"></div>
+  <div id="scope-mask"></div>
+  <div id="scope-ui">
+    <svg class="lock" viewBox="0 0 100 100"><circle class="lock-bg" cx="50" cy="50" r="44"/><circle class="lock-fill" cx="50" cy="50" r="44" pathLength="100"/></svg>
+    <div class="flash"></div>
+    <div class="stamp"><span class="st-tag">Secret found</span><b class="st-name"></b><span class="st-count"></span><span class="st-saved">Saved. See them all in Secrets on the desk computer.</span></div>
+    <div class="seen"></div>
+    <div class="tally"><span class="dots"></span><span class="tally-n"></span></div>
+  </div>
+
+  <div id="hint" class="hint">
+    <span class="hint-key">WASD</span> walk &nbsp; <span class="hint-key">drag</span> look around
+  </div>
+  <div id="prompt" class="hint hint-prompt hidden"></div>
+  <button id="jump" class="jump hidden">jump</button>
+  <div id="rotate" class="rotate hidden"><div>Turn your phone sideways to use the computer</div></div>
+  <button id="theme-btn" class="theme-btn" title="Switch between day and night">
+    <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><g stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>
+    <svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    <span class="theme-label">night</span>
+  </button>
+  <div id="perf-note" class="perf-note hidden" role="status"><p></p><div class="pn-actions"><a class="pn-go" href="cv/">Open the one-page version</a><button class="pn-stay" type="button">Keep exploring</button></div></div>
+  <a id="quick" class="quick-btn" href="cv/" title="Everything on one plain page">quick view</a>
+  <a id="latest" class="quick-btn latest-btn" href="writeups/ansem-drain/" title="My latest investigation">new: Ansem trace</a>
+  <div class="music-pill"><button id="music" class="music">music off</button><button id="music-next" class="music music-next" title="Next song">next</button></div>
+  <button id="back" class="hint hint-back hidden"><span class="hint-key">esc</span> lean back</button>
+  <div id="scope-hint" class="hint hidden"><span class="hint-key">WASD</span> aim &nbsp; <span class="hint-key">drag</span> aim</div>
+  <button id="scope-back" class="hint hint-back hidden"><span class="hint-key">esc</span> step back</button>
+
+  <div id="loader">
+    <div class="loader-box">
+      <div class="loader-title">0xsurgeon</div>
+      <div class="loader-line">warming up the tubes<span class="loader-dots"></span></div>
+      <div class="loader-tip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Turn the music on for the full effect (bottom right)</div>
+      <a class="loader-quick" href="cv/">In a hurry? Open the quick view instead</a>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stongeren.github.io/sitemap.xml
